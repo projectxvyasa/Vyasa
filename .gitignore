@@ -1,0 +1,22 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.idea/
+.vscode/
+
+# Node / build (if ever added)
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# Secrets — never commit tokens, keys or local creds
+*.pem
+*.key
+.env
+.env.*
+secrets.*
+*token*.txt

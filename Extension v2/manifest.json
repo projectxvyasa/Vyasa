@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "VYASA (Vulnerability Yield & Attack Simulation Automation)",
+  "version": "2.7.0",
+  "description": "Cyberpunk Security & Tech Auditor: passive recon plus authorized active confirmation of XSS/SQLi down to the exact endpoint and parameter.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "webRequest",
+    "webNavigation",
+    "sidePanel",
+    "cookies"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {},
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["inject-hook.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

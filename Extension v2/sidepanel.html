@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VYASA: Vulnerability Yield & Attack Simulation Automation HUD</title>
+  <script>try{var t=localStorage.getItem('vyasa_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="crt-overlay"></div>
+
+  <div class="container">
+    <!-- Cyber Header -->
+    <header class="cyber-header">
+      <div class="header-top">
+        <h1 class="cyber-title">
+          <span class="status-pulse"></span> VYASA <span class="cyber-badge">HUD v2.7</span>
+        </h1>
+        <button id="themeToggle" class="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle theme">🌙</button>
+      </div>
+      <div class="target-url" id="targetUrlDisplay">TARGET: <span>Acquiring active tab...</span></div>
+    </header>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="btn-cyber" id="scanBtn">
+        ▶ INITIATE SCAN
+      </button>
+      <label class="active-toggle" id="activeToggleWrap" title="Active mode confirms vulns down to the parameter by sending test traffic — authorized targets only.">
+        <input type="checkbox" id="activeToggle">
+        <span class="active-toggle-track"><span class="active-toggle-dot"></span></span>
+        <span class="active-toggle-label">⚡ ACTIVE</span>
+      </label>
+      <button class="btn-cyber btn-secondary" id="exportJsonBtn" title="Download JSON Report">
+        ⤓ JSON
+      </button>
+      <button class="btn-cyber btn-secondary" id="exportPdfBtn" title="Download Printable PDF Report">
+        📄 PDF
+      </button>
+      <button class="btn-cyber btn-secondary" id="exportMdBtn" title="Copy Markdown Bug Bounty Report">
+        📋 MD
+      </button>
+    </div>
+
+    <!-- Score HUD Card -->
+    <div class="hud-score-card">
+      <div class="gauge-circle" id="scoreCircle">
+        <span class="score-num" id="scoreNum">--</span>
+        <span class="score-subtext">SCORE</span>
+      </div>
+      <div class="score-info">
+        <div class="score-title">SECURITY EVALUATION</div>
+        <div class="score-status" id="scoreGrade">STANDBY</div>
+      </div>
+    </div>
+
+    <!-- Cyber Navigation Tabs -->
+    <div class="cyber-tabs" id="tabNav">
+      <button class="tab-btn active" data-tab="panelOverview">OVERVIEW</button>
+      <button class="tab-btn" data-tab="panelActive">ATTACK SURFACE</button>
+      <button class="tab-btn" data-tab="panelHeaders">HEADERS</button>
+      <button class="tab-btn" data-tab="panelTech">TECH STACK</button>
+      <button class="tab-btn" data-tab="panelPayloads">PAYLOADS</button>
+      <button class="tab-btn" data-tab="panelSecrets">SECRETS</button>
+      <button class="tab-btn" data-tab="panelCookies">COOKIES</button>
+      <button class="tab-btn" data-tab="panelDns">DNS & NET</button>
+    </div>
+
+    <!-- Tab Panels Container -->
+    <div id="tabContent">
+      <!-- 1. OVERVIEW PANEL -->
+      <div class="tab-panel active" id="panelOverview">
+        <div class="empty-hud" id="overviewEmptyState">
+          ⚡ Ready to audit target origin. Click <strong>INITIATE SCAN</strong> to begin.
+        </div>
+        <div id="overviewResults"></div>
+      </div>
+
+      <!-- 1b. ATTACK SURFACE (ACTIVE SCAN) PANEL -->
+      <div class="tab-panel" id="panelActive">
+        <div class="empty-hud" id="activeEmptyState">
+          ⚡ <strong>Active scan</strong> confirms vulnerabilities down to the exact endpoint &amp; parameter — which inputs reflect, in what context, and which characters the filter lets through.<br><br>
+          It <strong>sends test traffic</strong> to the target, so it only runs on origins you confirm you're authorized to test. Click <strong>ACTIVE SCAN</strong> to begin.
+        </div>
+        <div id="activeResults"></div>
+      </div>
+
+      <!-- 2. HEADERS PANEL -->
+      <div class="tab-panel" id="panelHeaders">
+        <div class="empty-hud" id="headersEmptyState">No security header scan executed yet.</div>
+        <div id="headersResults"></div>
+      </div>
+
+      <!-- 3. TECH STACK PANEL -->
+      <div class="tab-panel" id="panelTech">
+        <div class="empty-hud" id="techEmptyState">No technology fingerprinting executed yet.</div>
+        <div id="techResults"></div>
+      </div>
+
+      <!-- 4. PAYLOADS PANEL -->
+      <div class="tab-panel" id="panelPayloads">
+        <div class="empty-hud" id="payloadsEmptyState">No vulnerability payloads generated yet. Run a scan first.</div>
+        <div id="payloadsResults"></div>
+      </div>
+
+      <!-- 5. SECRETS PANEL -->
+      <div class="tab-panel" id="panelSecrets">
+        <div class="empty-hud" id="secretsEmptyState">No client-side secret scan executed yet.</div>
+        <div id="secretsResults"></div>
+      </div>
+
+      <!-- 6. COOKIES PANEL -->
+      <div class="tab-panel" id="panelCookies">
+        <div class="empty-hud" id="cookiesEmptyState">No cookie security audit executed yet.</div>
+        <div id="cookiesResults"></div>
+      </div>
+
+      <!-- 7. DNS & NET PANEL -->
+      <div class="tab-panel" id="panelDns">
+        <div class="empty-hud" id="dnsEmptyState">No DNS / Email spoofing recon executed yet.</div>
+        <div id="dnsResults"></div>
+      </div>
+    </div>
+
+    <!-- Terminal Console Log Window -->
+    <div class="terminal-card" id="terminalConsole">
+      <div class="log-line"><span class="log-time">[SYS]</span> <span class="log-info">VYASA Cyber Terminal Engine v2.6 Initialized.</span></div>
+      <div class="log-line"><span class="log-time">[SYS]</span> Select active tab and press INITIATE SCAN.</div>
+    </div>
+  </div>
+
+  <!-- Authorization Gate Modal (active scanning) -->
+  <div class="vyasa-modal-overlay" id="authModal" style="display:none;">
+    <div class="vyasa-modal">
+      <div class="vyasa-modal-title">⚠ AUTHORIZED TESTING CONFIRMATION</div>
+      <div class="vyasa-modal-body">
+        <p>Active scan will send live test requests (XSS canaries, a single-quote SQL probe, redirect checks) to:</p>
+        <div class="vyasa-modal-origin" id="authModalOrigin">—</div>
+        <p>Only proceed if you have <strong>explicit authorization</strong> to test this target. Unauthorized scanning may be illegal.</p>
+        <label class="vyasa-opt"><input type="checkbox" id="optSqli" checked> Include read-only SQLi probes (error + boolean)</label>
+        <label class="vyasa-opt"><input type="checkbox" id="optPost" checked> Test POST / body parameters (e.g. search forms)</label>
+        <label class="vyasa-opt"><input type="checkbox" id="optState"> Also submit <strong>state-changing</strong> forms — contact / signup / booking (sends real submissions)</label>
+        <label class="vyasa-opt vyasa-ack"><input type="checkbox" id="optAck"> I confirm I am authorized to actively test this origin.</label>
+      </div>
+      <div class="vyasa-modal-actions">
+        <button class="btn-cyber btn-secondary" id="authCancel">CANCEL</button>
+        <button class="btn-cyber btn-active" id="authConfirm" disabled>AUTHORIZE &amp; SCAN</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
