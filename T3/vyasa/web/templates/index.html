@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VYASA - Autonomous AI Penetration Testing & Threat Reasoning Platform</title>
+  
+  <!-- Early Theme Detection to prevent FOUC -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('vyasa-theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <!-- Google Fonts: Luxury Display & Precision Monospace -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Mermaid.js for Attack Graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <!-- Marked.js for Clean Visual Markdown Reports -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            display: ['"Outfit"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            // Re-skinned to the /live iOS-blue glass palette.
+            // 'amber' (Tailwind default) is overridden so every text-amber-*/
+            // bg-amber-* class across the page becomes the blue accent.
+            amber: {
+              50: '#eef6ff', 100: '#d9ecff', 200: '#b5d9ff', 300: '#86c5fa',
+              400: '#4ab0f5', 500: '#0a84ff', 600: '#0a6fe0', 700: '#0a5abc',
+              800: '#0d4791', 900: '#0f3a73', 950: '#08203f'
+            },
+            luxury: {
+              50: '#eef6ff', 100: '#d9ecff', 200: '#b5d9ff', 300: '#86c5fa',
+              400: '#4ab0f5', 500: '#0a84ff', 600: '#0a6fe0', 700: '#0a5abc',
+              800: '#0d4791', 900: '#0f3a73', 950: '#08203f'
+            },
+            obsidian: {
+              800: '#141a26', 850: '#0f141f', 900: '#0b0e16', 950: '#070a10'
+            },
+            royal: {
+              400: '#64d2ff', 500: '#3aa0ff', 600: '#2b7fff', 900: '#0f2d66', 950: '#081833'
+            }
+          }
+        }
+      }
+    };
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0a0e16',
+        primaryColor: '#0f1a2e',
+        primaryTextColor: '#bfe0ff',
+        primaryBorderColor: '#0a84ff',
+        lineColor: '#5ac8fa',
+        secondaryColor: '#12204a',
+        tertiaryColor: '#0f172a'
+      }
+    });
+  </script>
+
+  <style>
+    /* ==========================================================================
+       LIQUID GLASS & SPATIAL UI DESIGN SYSTEM
+       ========================================================================== */
+    :root {
+      --gold-primary: #0a84ff;
+      --gold-gradient: linear-gradient(135deg, #cfe8ff 0%, #5ac8fa 30%, #0a84ff 70%, #0a5abc 100%);
+      --glass-base: rgba(16, 22, 34, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --glass-gold-border: rgba(10, 132, 255, 0.4);
+      --glass-glow: 0 20px 48px -8px rgba(0, 0, 0, 0.75);
+    }
+
+    body {
+      background-color: #0b0e14;
+      background-image:
+        radial-gradient(at 12% 0%, rgba(47, 143, 255, 0.14) 0px, transparent 48%),
+        radial-gradient(at 92% 6%, rgba(79, 107, 255, 0.13) 0px, transparent 50%),
+        radial-gradient(at 55% 115%, rgba(42, 209, 192, 0.08) 0px, transparent 55%),
+        radial-gradient(at 80% 100%, rgba(10, 132, 255, 0.07) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: #f2f5fa;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.35s ease, color 0.35s ease;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Spatial Parallax Glow Orbs */
+    .spatial-parallax-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(65px);
+      pointer-events: none;
+      z-index: 0;
+      will-change: transform;
+    }
+    #spatial-orb-gold {
+      width: 460px;
+      height: 460px;
+      background: radial-gradient(circle, rgba(47, 143, 255, 0.18) 0%, rgba(47, 143, 255, 0) 70%);
+      top: -70px;
+      left: 12%;
+    }
+    #spatial-orb-violet {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(79, 107, 255, 0.17) 0%, rgba(79, 107, 255, 0) 70%);
+      top: 120px;
+      right: 4%;
+    }
+    #spatial-orb-emerald {
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(42, 209, 192, 0.1) 0%, rgba(42, 209, 192, 0) 70%);
+      bottom: 60px;
+      left: 5%;
+    }
+
+    /* Spatial Perspective Container */
+    .spatial-scene {
+      perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    /* 3D Spatial Tilt Cards (Zero-Jitter Fluid Physics) */
+    .spatial-card {
+      transform-style: preserve-3d;
+      will-change: transform;
+      position: relative;
+      backface-visibility: hidden;
+      -webkit-font-smoothing: subpixel-antialiased;
+      transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);
+    }
+
+    /* Dynamic Specular Spatial Glare */
+    .spatial-glare {
+      position: absolute;
+      inset: 0;
+      pointer-events: none !important;
+      opacity: 0;
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 30;
+      border-radius: inherit;
+      mix-blend-mode: overlay;
+    }
+
+    /* Multi-Tier Spatial Z-Layers */
+    .spatial-layer-floating {
+      transform: translateZ(22px);
+      transform-style: preserve-3d;
+    }
+    .spatial-layer-deep {
+      transform: translateZ(32px);
+      transform-style: preserve-3d;
+    }
+
+    /* Liquid Glass Panels */
+    .glass-panel {
+      background: 
+        radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.01) 60%, transparent 100%),
+        rgba(13, 16, 25, 0.65);
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 18px 42px -6px rgba(0, 0, 0, 0.7),
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -1px 2px 0 rgba(0, 0, 0, 0.4);
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-panel-luxury {
+      background:
+        radial-gradient(130% 130% at 50% -10%, rgba(255, 255, 255, 0.14) 0%, rgba(10, 132, 255, 0.08) 45%, rgba(15, 20, 31, 0.78) 100%),
+        rgba(15, 20, 31, 0.74);
+      backdrop-filter: blur(30px) saturate(185%);
+      -webkit-backdrop-filter: blur(30px) saturate(185%);
+      border: 1px solid rgba(10, 132, 255, 0.32);
+      box-shadow:
+        0 24px 50px -8px rgba(0, 0, 0, 0.8),
+        0 0 32px -4px rgba(10, 132, 255, 0.18),
+        inset 0 1.5px 1px 0 rgba(140, 200, 255, 0.4),
+        inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.5);
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-card {
+      background: 
+        radial-gradient(120% 120% at 50% -10%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 60%, transparent 100%),
+        rgba(11, 14, 22, 0.62);
+      backdrop-filter: blur(20px) saturate(190%);
+      -webkit-backdrop-filter: blur(20px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 
+        0 12px 30px -4px rgba(0, 0, 0, 0.55),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.16);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card:hover {
+      border-color: rgba(10, 132, 255, 0.48);
+      box-shadow:
+        0 20px 42px -6px rgba(0, 0, 0, 0.7),
+        0 0 24px -2px rgba(10, 132, 255, 0.26),
+        inset 0 1px 2px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .glass-input {
+      background: rgba(8, 10, 16, 0.75);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.65);
+      transition: all 0.2s ease;
+    }
+    .glass-input:focus {
+      border-color: #0a84ff;
+      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.22), 0 0 18px rgba(10, 132, 255, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.5);
+      outline: none;
+    }
+
+    /* Liquid Caustic Shimmer Keyframe */
+    @keyframes liquidSweep {
+      0% { transform: translateX(-160%) skewX(-25deg); }
+      40% { transform: translateX(160%) skewX(-25deg); }
+      100% { transform: translateX(160%) skewX(-25deg); }
+    }
+
+    /* Liquid Glass Buttons */
+    /* Primary button — pixel-matched to /live's .btn */
+    .glass-btn-luxury {
+      background: linear-gradient(145deg, #4a9dff, #0a6fe0);
+      color: #ffffff;
+      font-weight: 700;
+      letter-spacing: 0.015em;
+      border: 0;
+      border-radius: 14px;
+      box-shadow:
+        0 10px 26px -8px rgba(10, 132, 255, 0.67),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .glass-btn-luxury::after { content: none; }
+    .glass-btn-luxury:hover {
+      background: linear-gradient(145deg, #5aa8ff, #0a74ea);
+      box-shadow:
+        0 16px 34px -8px rgba(10, 132, 255, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+      transform: translateY(-2px);
+    }
+    .glass-btn-luxury:active {
+      transform: translateY(0) scale(0.98);
+      box-shadow: 0 6px 16px -6px rgba(10, 132, 255, 0.5);
+    }
+
+    /* Secondary / pill buttons — matched to /live's frosted glass */
+    .glass-btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(30px) saturate(165%);
+      -webkit-backdrop-filter: blur(30px) saturate(165%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #eaf1fa;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .glass-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.26);
+      color: #ffffff;
+      box-shadow: 0 8px 22px -6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transform: translateY(-1.5px);
+    }
+    .glass-btn-secondary:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    /* Metallic Gradient Typography */
+    .gold-gradient-text {
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .violet-gradient-text {
+      background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 40%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Custom Luxury Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(8, 10, 16, 0.8); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(10, 132, 255, 0.5) 0%, rgba(90, 200, 250, 0.4) 100%);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #0a84ff 0%, #5ac8fa 100%);
+    }
+
+    /* Report Reader Typography & Luxury Styling */
+    .report-body h1 { 
+      font-size: 1.6rem; 
+      font-weight: 800; 
+      color: #fef08a; 
+      margin-bottom: 0.85rem; 
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3); 
+      padding-bottom: 0.6rem; 
+      letter-spacing: -0.02em;
+    }
+    .report-body h2 { 
+      font-size: 1.3rem; 
+      font-weight: 700; 
+      color: #e2b73b; 
+      margin-top: 1.75rem; 
+      margin-bottom: 0.85rem; 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+      padding-bottom: 0.4rem; 
+    }
+    .report-body h3 { 
+      font-size: 1.1rem; 
+      font-weight: 600; 
+      color: #f8fafc; 
+      margin-top: 1.35rem; 
+      margin-bottom: 0.5rem; 
+    }
+    .report-body p { 
+      margin-bottom: 0.85rem; 
+      line-height: 1.68; 
+      color: #cbd5e1; 
+      font-size: 0.875rem;
+    }
+    .report-body blockquote { 
+      border-left: 4px solid #d4af37; 
+      background: rgba(212, 175, 55, 0.08); 
+      backdrop-filter: blur(14px);
+      padding: 0.85rem 1.15rem; 
+      border-radius: 0.5rem; 
+      margin-bottom: 1.15rem; 
+      color: #fef08a; 
+      font-style: italic;
+    }
+    .report-body table { 
+      width: 100%; 
+      border-collapse: separate; 
+      border-spacing: 0;
+      margin-bottom: 1.35rem; 
+      font-size: 0.8125rem; 
+      overflow: hidden; 
+      border-radius: 0.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(11, 14, 22, 0.65);
+    }
+    .report-body th { 
+      background: rgba(20, 24, 36, 0.9); 
+      border-bottom: 1px solid rgba(212, 175, 55, 0.25); 
+      padding: 0.75rem 1rem; 
+      text-align: left; 
+      color: #fef08a; 
+      font-weight: 700; 
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.725rem;
+    }
+    .report-body td { 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+      padding: 0.65rem 1rem; 
+      color: #e2e8f0; 
+    }
+    .report-body tr:last-child td { border-bottom: none; }
+    .report-body tr:nth-child(even) { background: rgba(15, 19, 30, 0.4); }
+    .report-body tr:hover { background: rgba(212, 175, 55, 0.05); }
+    .report-body ul { list-style-type: disc; padding-left: 1.35rem; margin-bottom: 0.85rem; color: #cbd5e1; }
+    .report-body ol { list-style-type: decimal; padding-left: 1.35rem; margin-bottom: 0.85rem; color: #cbd5e1; }
+    .report-body li { margin-bottom: 0.4rem; line-height: 1.55; }
+    .report-body code { 
+      background: rgba(18, 22, 33, 0.85); 
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      padding: 0.15rem 0.45rem; 
+      border-radius: 0.3rem; 
+      font-family: 'JetBrains Mono', monospace; 
+      color: #fde047; 
+      font-size: 0.85em; 
+    }
+    .report-body pre { 
+      background: rgba(6, 8, 13, 0.92); 
+      border: 1px solid rgba(212, 175, 55, 0.22); 
+      padding: 1rem 1.25rem; 
+      border-radius: 0.65rem; 
+      overflow-x: auto; 
+      margin-bottom: 1.15rem; 
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+    }
+    .report-body pre code { background: transparent; border: none; padding: 0; color: #e2e8f0; }
+
+    /* ==========================================================================
+       LIGHT THEME LUXURY FROSTED LIQUID GLASS OVERRIDES
+       ========================================================================== */
+    html.light body {
+      background-color: #f6f8fc !important;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(212, 175, 55, 0.15) 0px, transparent 48%),
+        radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+        radial-gradient(at 50% 30%, rgba(16, 185, 129, 0.05) 0px, transparent 60%),
+        radial-gradient(at 80% 100%, rgba(212, 175, 55, 0.12) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(244, 63, 94, 0.05) 0px, transparent 50%) !important;
+      color: #0f172a !important;
+    }
+
+    html.light .glass-panel {
+      background: 
+        radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.75) 100%),
+        rgba(255, 255, 255, 0.82) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 
+        0 18px 42px -6px rgba(0, 0, 0, 0.06), 
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 1) !important;
+    }
+
+    html.light .glass-panel-luxury {
+      background: 
+        radial-gradient(130% 130% at 50% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(212, 175, 55, 0.08) 60%, rgba(255, 255, 255, 0.8) 100%),
+        rgba(255, 255, 255, 0.88) !important;
+      border: 1px solid rgba(212, 175, 55, 0.4) !important;
+      box-shadow: 
+        0 24px 50px -10px rgba(212, 175, 55, 0.16),
+        0 0 25px -4px rgba(212, 175, 55, 0.15),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+        inset 0 -1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+    }
+
+    html.light .glass-card {
+      background: 
+        radial-gradient(120% 120% at 50% -10%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%),
+        rgba(255, 255, 255, 0.8) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 
+        0 12px 32px -4px rgba(0, 0, 0, 0.06),
+        inset 0 1px 2px 0 rgba(255, 255, 255, 1) !important;
+    }
+    html.light .glass-card:hover {
+      border-color: rgba(212, 175, 55, 0.5) !important;
+      box-shadow: 
+        0 20px 42px -6px rgba(0, 0, 0, 0.1),
+        0 0 24px -2px rgba(212, 175, 55, 0.25),
+        inset 0 1px 2px 0 rgba(255, 255, 255, 1) !important;
+    }
+
+    html.light .glass-input {
+      background: rgba(255, 255, 255, 0.92) !important;
+      color: #0f172a !important;
+      border: 1px solid rgba(0, 0, 0, 0.14) !important;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    }
+    html.light .glass-input:focus {
+      border-color: #d4af37 !important;
+      box-shadow: 0 0 16px rgba(212, 175, 55, 0.35) !important;
+    }
+
+    html.light .glass-btn-secondary {
+      background: rgba(255, 255, 255, 0.88) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      color: #334155 !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+    }
+    html.light .glass-btn-secondary:hover {
+      background: rgba(255, 255, 255, 1) !important;
+      border-color: rgba(212, 175, 55, 0.5) !important;
+      color: #0f172a !important;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.09), 0 0 14px rgba(212, 175, 55, 0.18) !important;
+    }
+
+    html.light header {
+      background: rgba(255, 255, 255, 0.88) !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.07) !important;
+    }
+
+    html.light footer {
+      background: rgba(255, 255, 255, 0.78) !important;
+      border-top: 1px solid rgba(0, 0, 0, 0.07) !important;
+      color: #64748b !important;
+    }
+
+    /* Light Theme Typography & Palette Overrides */
+    html.light .text-slate-100 { color: #0f172a !important; }
+    html.light .text-slate-200 { color: #1e293b !important; }
+    html.light .text-slate-300 { color: #334155 !important; }
+    html.light .text-slate-400 { color: #64748b !important; }
+    html.light .text-slate-500 { color: #94a3b8 !important; }
+
+    html.light .bg-obsidian-950,
+    html.light .bg-obsidian-950\/90,
+    html.light .bg-obsidian-950\/80,
+    html.light .bg-obsidian-950\/70,
+    html.light .bg-obsidian-950\/60 {
+      background-color: rgba(246, 248, 252, 0.85) !important;
+    }
+
+    html.light .bg-obsidian-900,
+    html.light .bg-obsidian-900\/90,
+    html.light .bg-obsidian-900\/80 {
+      background-color: rgba(240, 243, 250, 0.85) !important;
+    }
+
+    html.light .border-white\/5,
+    html.light .border-white\/10 {
+      border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+
+    /* Keep Cyber Terminal in light mode as high-contrast dark cockpit glass */
+    html.light #web-terminal-logs {
+      background: #080a10 !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(0, 0, 0, 0.1) !important;
+    }
+    html.light #web-terminal-logs .text-slate-300 {
+      color: #cbd5e1 !important;
+    }
+
+    /* Light Theme Modals */
+    html.light #report-modal > div,
+    html.light #config-modal > div,
+    html.light #vuln-modal > div,
+    html.light #audit-launch-modal > div {
+      background: rgba(255, 255, 255, 0.96) !important;
+      color: #0f172a !important;
+      border-color: rgba(212, 175, 55, 0.4) !important;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(212, 175, 55, 0.15) !important;
+    }
+
+    html.light #report-tab1-container,
+    html.light #report-tab2-container,
+    html.light #report-tab3-container,
+    html.light #raw-report-container {
+      background: rgba(250, 250, 252, 0.95) !important;
+      color: #1e293b !important;
+    }
+
+    /* Light Theme Report Body */
+    html.light .report-body h1 { color: #92400e !important; border-bottom-color: rgba(212, 175, 55, 0.35) !important; }
+    html.light .report-body h2 { color: #a16207 !important; border-bottom-color: rgba(0, 0, 0, 0.08) !important; }
+    html.light .report-body h3 { color: #0f172a !important; }
+    html.light .report-body p { color: #334155 !important; }
+    html.light .report-body blockquote { 
+      background: rgba(212, 175, 55, 0.09) !important; 
+      color: #854d0e !important;
+    }
+    html.light .report-body table { 
+      background: rgba(255, 255, 255, 0.9) !important; 
+      border-color: rgba(0, 0, 0, 0.09) !important; 
+    }
+    html.light .report-body th { 
+      background: rgba(248, 245, 235, 0.95) !important; 
+      color: #92400e !important; 
+      border-bottom-color: rgba(212, 175, 55, 0.35) !important; 
+    }
+    html.light .report-body td { 
+      border-bottom-color: rgba(0, 0, 0, 0.05) !important; 
+      color: #1e293b !important; 
+    }
+    html.light .report-body tr:nth-child(even) { 
+      background: rgba(248, 250, 252, 0.65) !important; 
+    }
+    html.light .report-body code { 
+      background: rgba(241, 245, 249, 0.95) !important; 
+      border-color: rgba(212, 175, 55, 0.4) !important; 
+      color: #854d0e !important; 
+    }
+    html.light .report-body pre { 
+      background: #0f172a !important; 
+      border-color: rgba(212, 175, 55, 0.3) !important; 
+    }
+    html.light .report-body pre code { 
+      color: #f8fafc !important; 
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-amber-400 selection:text-black">
+
+  <!-- Ambient Spatial Parallax Glow Orbs -->
+  <div id="spatial-orb-gold" class="spatial-parallax-orb"></div>
+  <div id="spatial-orb-violet" class="spatial-parallax-orb"></div>
+  <div id="spatial-orb-emerald" class="spatial-parallax-orb"></div>
+
+  <!-- Top Luxury Spatial Navigation Header -->
+  <header class="border-b border-white/5 bg-obsidian-950/70 backdrop-blur-2xl sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-2xl transition-all">
+    <div class="flex items-center space-x-3.5">
+      <!-- Luxury Liquid Crest Icon -->
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-400 via-luxury-500 to-amber-700 p-[1px] shadow-lg shadow-amber-500/25">
+        <div class="h-full w-full rounded-[11px] bg-obsidian-950/90 flex items-center justify-center backdrop-blur-sm">
+          <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400"></i>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2.5">
+          <span class="text-2xl font-display font-black tracking-widest gold-gradient-text drop-shadow-[0_2px_8px_rgba(212,175,55,0.3)]">VYASA</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-950/60 text-amber-300 border border-amber-500/30 uppercase tracking-wider font-semibold shadow-sm">v0.1.0</span>
+          <span class="hidden sm:inline-flex text-[9px] font-mono px-2 py-0.5 rounded-full bg-purple-950/50 text-purple-300 border border-purple-500/30 uppercase tracking-widest">Spatial UI</span>
+        </div>
+        <p class="text-xs text-slate-400 tracking-wide font-medium">Autonomous AI Penetration Testing & Threat Reasoning Platform</p>
+      </div>
+    </div>
+
+    <!-- System Status & Model Indicator & Theme Switcher -->
+    <div class="flex items-center space-x-3 text-xs">
+      <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-obsidian-900/80 border border-emerald-500/25 shadow-lg shadow-emerald-950/30 backdrop-blur-md">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+        </span>
+        <span class="text-emerald-300 font-medium tracking-wide" id="engine-status">Engine Ready</span>
+      </div>
+
+      <div class="hidden sm:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-royal-950/60 border border-royal-500/30 text-royal-300 shadow-lg shadow-purple-950/30 backdrop-blur-md">
+        <i data-lucide="cpu" class="w-3.5 h-3.5 text-royal-400"></i>
+        <span class="tracking-wide">Model: Qwen 2.5 7B (Local / Heuristic Fallback)</span>
+      </div>
+
+      <!-- Luxury Glass Theme Toggle Button -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full glass-btn-secondary text-xs group cursor-pointer transition shadow-md hover:scale-105 active:scale-95" title="Toggle Dark / Light Luxury Theme">
+        <i id="theme-toggle-icon" data-lucide="sun" class="w-3.5 h-3.5 text-amber-400 group-hover:rotate-45 transition-transform duration-300"></i>
+        <span id="theme-toggle-label" class="font-medium text-xs tracking-wide">Light Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Luxury Container with 3D Spatial Scene -->
+  <main class="spatial-scene flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6 relative z-10">
+
+    <!-- Target Scope Input Card (Luxury Liquid Glass) -->
+    <section class="glass-panel-luxury rounded-2xl p-6 relative overflow-hidden">
+      <!-- Decorative specular light sweep -->
+      <div class="absolute -right-20 -top-20 w-72 h-72 bg-gradient-to-br from-amber-400/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 relative z-10">
+        <!-- Target Host Scope -->
+        <div class="lg:col-span-7">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-bold uppercase tracking-widest text-amber-200/90">Target Host / Domain / IP</label>
+            <span class="text-[10px] font-mono text-slate-400">Primary Audit Scope</span>
+          </div>
+          <div class="relative flex items-center">
+            <i data-lucide="crosshair" class="w-5 h-5 text-amber-400/80 absolute left-3.5"></i>
+            <input type="text" id="target-input" value="localhost" placeholder="e.g. localhost, example.com, 192.168.1.1" 
+                   class="w-full pl-11 pr-4 py-2.5 glass-input rounded-xl text-sm text-slate-100 placeholder-slate-500 font-mono">
+          </div>
+          <!-- Quick Presets -->
+          <div class="flex items-center space-x-2 mt-2.5 text-xs text-slate-400">
+            <span class="font-medium text-slate-400">Quick Scope:</span>
+            <button onclick="setTarget('localhost')" class="px-2.5 py-1 rounded-lg glass-btn-secondary text-xs font-mono">localhost</button>
+            <button onclick="setTarget('example.com')" class="px-2.5 py-1 rounded-lg glass-btn-secondary text-xs font-mono">example.com</button>
+            <button onclick="setTarget('testcorp.internal')" class="px-2.5 py-1 rounded-lg glass-btn-secondary text-xs font-mono">testcorp.internal</button>
+          </div>
+        </div>
+
+        <!-- Optional Endpoint Path Scoping -->
+        <div class="lg:col-span-5">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-bold uppercase tracking-widest text-amber-200/90">Target Endpoint / Path <span class="text-slate-500 lowercase font-normal">(optional)</span></label>
+            <span class="text-[10px] text-amber-400 font-mono font-semibold">Fast Scoping</span>
+          </div>
+          <div class="relative flex items-center">
+            <i data-lucide="link" class="w-5 h-5 text-amber-400/80 absolute left-3.5"></i>
+            <input type="text" id="endpoint-input" placeholder="e.g. /api/v1/search or /login" 
+                   class="w-full pl-11 pr-4 py-2.5 glass-input rounded-xl text-sm text-slate-100 placeholder-slate-500 font-mono">
+          </div>
+          <div class="flex items-center space-x-2 mt-2.5 text-xs text-slate-400">
+            <span class="font-medium text-slate-400">Presets:</span>
+            <button onclick="setEndpoint('/api/v1/search')" class="px-2.5 py-1 rounded-lg glass-btn-secondary text-xs font-mono">/api/v1/search</button>
+            <button onclick="setEndpoint('/login')" class="px-2.5 py-1 rounded-lg glass-btn-secondary text-xs font-mono">/login</button>
+            <button onclick="setEndpoint('')" class="px-2.5 py-1 rounded-lg glass-btn-secondary text-xs font-mono">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Row -->
+      <div class="flex flex-wrap items-center justify-between gap-4 mt-6 pt-5 border-t border-white/5 relative z-10">
+        <div class="flex items-center space-x-2 text-xs text-slate-400">
+          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+          <span>Fine-tuned WSTG penetration testing with automated AI threat modeling & attack chain correlation.</span>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button id="vuln-modal-btn" onclick="openVulnModal()" class="px-4 py-2.5 rounded-xl glass-btn-secondary font-medium text-sm flex items-center space-x-2.5">
+            <i data-lucide="list-checks" class="w-4 h-4 text-emerald-400"></i>
+            <span>Vulnerability Checklist:</span>
+            <span id="selected-vulns-badge" class="px-2.5 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">100 / 100 Checks</span>
+          </button>
+
+          <button id="options-btn" onclick="openConfigModal()" class="px-4 py-2.5 rounded-xl glass-btn-secondary font-medium text-sm flex items-center space-x-2">
+            <i data-lucide="sliders" class="w-4 h-4 text-amber-400"></i>
+            <span>Report Options</span>
+          </button>
+
+          <button id="start-btn" onclick="onLaunchAuditClick()" class="px-6 py-2.5 rounded-xl glass-btn-luxury flex items-center space-x-2.5">
+            <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+            <span>Launch Autonomous Audit</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Phase Stepper -->
+      <div class="mt-6 pt-5 border-t border-white/5 relative z-10">
+        <div class="grid grid-cols-5 gap-2.5 text-center text-xs">
+          <div id="step-recon" class="p-2.5 rounded-xl glass-card transition-all duration-300">
+            <div class="font-bold text-slate-400 step-label tracking-wide">1. Reconnaissance</div>
+            <div class="text-[11px] text-slate-500 font-mono">Asset & Ports</div>
+          </div>
+          <div id="step-testing" class="p-2.5 rounded-xl glass-card transition-all duration-300">
+            <div class="font-bold text-slate-400 step-label tracking-wide">2. Baseline Probing</div>
+            <div class="text-[11px] text-slate-500 font-mono">HTTP & SSL Audit</div>
+          </div>
+          <div id="step-reasoning" class="p-2.5 rounded-xl glass-card transition-all duration-300">
+            <div class="font-bold text-slate-400 step-label tracking-wide">3. AI Reasoning Loop</div>
+            <div class="text-[11px] text-slate-500 font-mono">Autonomous Probes</div>
+          </div>
+          <div id="step-correlation" class="p-2.5 rounded-xl glass-card transition-all duration-300">
+            <div class="font-bold text-slate-400 step-label tracking-wide">4. Attack Paths</div>
+            <div class="text-[11px] text-slate-500 font-mono">Kill-Chain Graph</div>
+          </div>
+          <div id="step-report" class="p-2.5 rounded-xl glass-card transition-all duration-300">
+            <div class="font-bold text-slate-400 step-label tracking-wide">5. Final Report</div>
+            <div class="text-[11px] text-slate-500 font-mono">Executive Synthesis</div>
+          </div>
+        </div>
+
+        <!-- Live phase status (populated during an active audit) -->
+        <div id="phase-live" class="mt-4 hidden items-center gap-3.5 px-4 py-3 rounded-xl glass-card border border-amber-500/20 bg-amber-950/10">
+          <div id="phase-spin" class="h-5 w-5 flex-none rounded-full border-2 border-amber-500/25 border-t-amber-400 animate-spin"></div>
+          <div class="min-w-0 flex-1">
+            <div id="phase-live-title" class="text-sm font-bold text-amber-200 tracking-wide">VYASA is initializing the engagement…</div>
+            <div id="phase-live-sub" class="text-[11px] text-slate-400 font-mono truncate mt-0.5">Preparing scope</div>
+          </div>
+          <div id="phase-live-count" class="ml-auto flex-none text-[11px] font-mono text-slate-400 px-2.5 py-1 rounded-lg bg-obsidian-950/60 border border-white/10"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards with Spatial 3D Tilt -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="spatial-card glass-card rounded-2xl p-5 flex items-center justify-between group">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Assets Mapped</p>
+          <p class="text-3xl font-display font-extrabold text-slate-100 mt-1 tracking-tight spatial-layer-deep" id="metric-assets">0</p>
+        </div>
+        <div class="h-12 w-12 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-400 shadow-lg shadow-sky-500/10 group-hover:scale-110 transition-transform spatial-layer-floating">
+          <i data-lucide="network" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <div class="spatial-card glass-card rounded-2xl p-5 flex items-center justify-between group">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Open Ports</p>
+          <p class="text-3xl font-display font-extrabold text-royal-300 mt-1 tracking-tight spatial-layer-deep" id="metric-ports">0</p>
+        </div>
+        <div class="h-12 w-12 rounded-xl bg-royal-500/10 border border-royal-500/25 flex items-center justify-center text-royal-400 shadow-lg shadow-royal-500/10 group-hover:scale-110 transition-transform spatial-layer-floating">
+          <i data-lucide="server" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <div class="spatial-card glass-card rounded-2xl p-5 flex items-center justify-between group">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Findings Catalog</p>
+          <p class="text-3xl font-display font-extrabold text-amber-400 mt-1 tracking-tight drop-shadow-[0_0_12px_rgba(251,191,36,0.3)] spatial-layer-deep" id="metric-findings">0</p>
+        </div>
+        <div class="h-12 w-12 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400 shadow-lg shadow-amber-500/10 group-hover:scale-110 transition-transform spatial-layer-floating">
+          <i data-lucide="bug" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <div class="spatial-card glass-card rounded-2xl p-5 flex items-center justify-between group">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Attack Paths</p>
+          <p class="text-3xl font-display font-extrabold text-rose-500 mt-1 tracking-tight drop-shadow-[0_0_12px_rgba(244,63,94,0.35)] spatial-layer-deep" id="metric-paths">0</p>
+        </div>
+        <div class="h-12 w-12 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400 shadow-lg shadow-rose-500/10 group-hover:scale-110 transition-transform spatial-layer-floating">
+          <i data-lucide="swords" class="w-6 h-6"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Threat Summary — severity donut (live context) -->
+    <section class="glass-card rounded-2xl p-5 md:p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Threat Summary</h2>
+        <span class="text-[11px] text-slate-500 font-mono">confirmed severity breakdown</span>
+      </div>
+      <div class="flex flex-col md:flex-row items-center gap-7">
+        <div class="relative flex-none" style="width:152px;height:152px">
+          <svg width="152" height="152" viewBox="0 0 152 152" style="filter:drop-shadow(0 6px 16px rgba(0,0,0,.45))">
+            <circle cx="76" cy="76" r="58" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="16"/>
+            <g id="donut-arcs" transform="rotate(-90 76 76)"></g>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span id="donut-total" class="text-3xl font-display font-extrabold leading-none">0</span>
+            <span class="text-[9px] uppercase tracking-[0.15em] text-slate-500 mt-1">findings</span>
+          </div>
+        </div>
+        <div id="donut-legend" class="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-x-7 gap-y-2.5"></div>
+      </div>
+    </section>
+
+    <!-- Interactive Live Cyber Terminal Section (Liquid Glass) -->
+    <section class="glass-panel rounded-2xl overflow-hidden shadow-2xl font-mono text-xs border border-white/10">
+      <div class="bg-obsidian-950/80 px-5 py-3 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="flex space-x-2">
+            <span class="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)] inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)] inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] inline-block"></span>
+          </div>
+          <span class="text-xs font-semibold text-slate-200 ml-2 flex items-center space-x-2 font-sans">
+            <i data-lucide="terminal" class="w-4 h-4 text-amber-400"></i>
+            <span class="tracking-wide">VYASA Live Cyber Terminal — Real-Time Probe Telemetry Stream</span>
+          </span>
+        </div>
+
+        <div class="flex items-center space-x-2 text-[11px]">
+          <button id="autoscroll-btn" onclick="toggleAutoScroll()" class="px-3 py-1 rounded-lg glass-btn-secondary text-amber-300 font-mono">Auto-Scroll: ON</button>
+          <button onclick="clearTerminal()" class="px-3 py-1 rounded-lg glass-btn-secondary text-slate-400 hover:text-white font-mono">Clear</button>
+          <button onclick="copyTerminal()" class="px-3 py-1 rounded-lg glass-btn-secondary text-slate-400 hover:text-white font-mono">Copy</button>
+        </div>
+      </div>
+
+      <div id="web-terminal-logs" class="p-5 h-64 overflow-y-auto space-y-2 bg-obsidian-950/90 text-slate-300 select-text leading-relaxed font-mono">
+        <div class="text-emerald-400 font-medium">[SYSTEM] VYASA Cyber Terminal online. Ready for engagement launch.</div>
+        <div class="text-slate-500">[INFO] Real-time probe telemetry, server responses, and AI hypotheses will stream live here.</div>
+      </div>
+    </section>
+
+    <!-- Main Workspace Two-Column Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: AI Reasoning Stream & Attack Graph (7 Cols) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- AI Reasoning Stream Card -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl flex flex-col h-[460px]">
+          <div class="flex items-center justify-between pb-3.5 border-b border-white/5">
+            <div class="flex items-center space-x-2.5">
+              <div class="p-1.5 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-400">
+                <i data-lucide="brain-circuit" class="w-4.5 h-4.5"></i>
+              </div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Autonomous AI Reasoning Loop</h2>
+            </div>
+            <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-obsidian-950/80 border border-white/10 text-amber-300 font-semibold" id="iteration-tag">Iteration: Idle</span>
+          </div>
+
+          <!-- Live Reasoning Feed Container -->
+          <div id="reasoning-feed" class="flex-1 overflow-y-auto space-y-3 mt-3 pr-2 font-mono text-xs">
+            <div class="p-5 rounded-xl bg-obsidian-950/60 border border-white/5 text-slate-500 text-center italic">
+              Ready for scope. Click "Launch Autonomous Audit" above to begin.
+            </div>
+          </div>
+        </section>
+
+        <!-- Correlated Attack Paths Card -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+          <div class="flex items-center justify-between pb-3.5 border-b border-white/5">
+            <div class="flex items-center space-x-2.5">
+              <div class="p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400">
+                <i data-lucide="git-fork" class="w-4.5 h-4.5"></i>
+              </div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Correlated Attack Paths (Kill Chains)</h2>
+            </div>
+          </div>
+
+          <div id="attack-paths-container" class="space-y-4">
+            <div class="p-6 rounded-xl bg-obsidian-950/60 border border-white/5 text-center text-slate-500 text-xs italic">
+              Attack paths will be synthesized here once the AI reasoning layer connects individual weaknesses into verified exploit chains.
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Column: Assets & Vulnerability Catalog (5 Cols) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- Discovered Assets Table -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl flex flex-col h-[340px]">
+          <div class="flex items-center justify-between pb-3.5 border-b border-white/5">
+            <div class="flex items-center space-x-2.5">
+              <div class="p-1.5 rounded-lg bg-royal-500/10 border border-royal-500/20 text-royal-400">
+                <i data-lucide="layers" class="w-4.5 h-4.5"></i>
+              </div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Discovered Assets</h2>
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-y-auto mt-3 pr-1">
+            <table class="w-full text-left text-xs font-mono">
+              <thead class="text-amber-200/80 uppercase text-[10px] tracking-wider border-b border-white/10">
+                <tr>
+                  <th class="py-2.5">Host / Target</th>
+                  <th class="py-2.5">Ports</th>
+                  <th class="py-2.5">Stack</th>
+                </tr>
+              </thead>
+              <tbody id="assets-tbody" class="divide-y divide-white/5">
+                <tr><td colspan="3" class="py-8 text-center text-slate-500 italic font-sans">No assets mapped yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Vulnerabilities Catalog -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl flex flex-col h-[460px]">
+          <div class="flex items-center justify-between pb-3.5 border-b border-white/5">
+            <div class="flex items-center space-x-2.5">
+              <div class="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                <i data-lucide="shield-x" class="w-4.5 h-4.5"></i>
+              </div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Vulnerability Catalog</h2>
+            </div>
+          </div>
+
+          <div id="findings-container" class="flex-1 overflow-y-auto space-y-2.5 mt-3 pr-1 text-xs">
+            <div class="py-10 text-center text-slate-500 italic">No vulnerability findings recorded yet</div>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+    <!-- Generated Reports Drawer -->
+    <section class="glass-panel-luxury rounded-2xl p-6 shadow-xl">
+      <div class="flex items-center justify-between pb-4 border-b border-white/5">
+        <div class="flex items-center space-x-2.5">
+          <div class="p-1.5 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-400">
+            <i data-lucide="file-text" class="w-4.5 h-4.5"></i>
+          </div>
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Audit Reports & Deliverables</h2>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button onclick="clearAllReports()" class="text-xs text-rose-300 hover:text-rose-200 flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-950/50 border border-rose-800/60 transition shadow-sm">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <span>Clear Reports</span>
+          </button>
+          <button onclick="loadReportsList()" class="text-xs text-slate-300 hover:text-amber-300 flex items-center space-x-1.5 px-3 py-1.5 rounded-xl glass-btn-secondary transition">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="reports-list" class="grid grid-cols-1 md:grid-cols-3 gap-3.5 mt-4 text-xs font-mono">
+        <div class="p-4 bg-obsidian-950/60 rounded-xl border border-white/5 text-slate-500 italic">Loading reports...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Report Viewer Modal with Floating Spatial Depth -->
+  <div id="report-modal" class="fixed inset-0 bg-black/80 backdrop-blur-2xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel-luxury max-w-6xl w-full max-h-[92vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-amber-500/30 transform transition-transform duration-300">
+      <!-- Header with 3 Types of Report Statement Tabs -->
+      <div class="p-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 bg-obsidian-950/80">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/25 flex items-center justify-center text-amber-400">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-amber-300 font-mono tracking-wide" id="modal-title">Security Audit Report</h3>
+            <span class="text-[11px] text-slate-400">3-Tab Comprehensive VAPT Security Analysis Statement</span>
+          </div>
+        </div>
+
+        <!-- 3 Types of Report Statement Tabs Bar -->
+        <div class="flex items-center space-x-1.5 bg-obsidian-950/90 p-1.5 rounded-xl border border-white/10 text-xs font-medium">
+          <button id="tab-btn-1" onclick="switchReportTab('tab1')" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-white font-bold transition flex items-center space-x-1.5 shadow-lg shadow-amber-500/20">
+            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-white"></i>
+            <span>1. Findings</span>
+          </button>
+          <button id="tab-btn-2" onclick="switchReportTab('tab2')" class="px-3.5 py-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-slate-200 transition flex items-center space-x-1.5">
+            <i data-lucide="activity" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>2. Endpoints & Activity</span>
+          </button>
+          <button id="tab-btn-3" onclick="switchReportTab('tab3')" class="px-3.5 py-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-slate-200 transition flex items-center space-x-1.5">
+            <i data-lucide="cpu" class="w-3.5 h-3.5 text-royal-400"></i>
+            <span>3. Tech & Fixes</span>
+          </button>
+          <button id="tab-btn-raw" onclick="switchReportTab('raw')" class="px-3.5 py-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-slate-200 transition flex items-center space-x-1.5">
+            <i data-lucide="code" class="w-3.5 h-3.5"></i>
+            <span>Raw MD</span>
+          </button>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <button onclick="downloadActiveReport()" class="px-3.5 py-1.5 glass-btn-secondary rounded-xl text-xs flex items-center space-x-1.5">
+            <i data-lucide="download" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>Download</span>
+          </button>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 text-2xl leading-none">&times;</button>
+        </div>
+      </div>
+
+      <!-- TAB 1: Findings Discovered During VAPT -->
+      <div id="report-tab1-container" class="p-6 flex-1 overflow-y-auto report-body bg-obsidian-950/90 text-slate-300 space-y-6">
+        <!-- Rendered Tab 1 HTML -->
+      </div>
+
+      <!-- TAB 2: Endpoints Checked & Actions/Probes Performed -->
+      <div id="report-tab2-container" class="p-6 flex-1 overflow-y-auto report-body bg-obsidian-950/90 text-slate-300 space-y-6 hidden">
+        <!-- Rendered Tab 2 HTML -->
+      </div>
+
+      <!-- TAB 3: Technologies, Endpoints Inventory & Suggestions/Fixes -->
+      <div id="report-tab3-container" class="p-6 flex-1 overflow-y-auto report-body bg-obsidian-950/90 text-slate-300 space-y-6 hidden">
+        <!-- Rendered Tab 3 HTML -->
+      </div>
+
+      <!-- Raw Markdown Container (Hidden by default) -->
+      <div id="raw-report-container" class="p-5 flex-1 overflow-y-auto font-mono text-xs text-slate-300 whitespace-pre-wrap selection:bg-amber-400 selection:text-black bg-obsidian-950/90 hidden">
+        <div id="modal-content"></div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3.5 bg-obsidian-950 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+        <span>💡 <b>Educational VAPT Statement:</b> Use Tab 1 for Findings, Tab 2 for Activity/Endpoints, and Tab 3 for Tech & Fixes.</span>
+        <button onclick="closeModal()" class="px-4 py-1.5 glass-btn-secondary rounded-xl text-xs">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report & Audit Configuration Modal -->
+  <div id="config-modal" class="fixed inset-0 bg-black/80 backdrop-blur-2xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel-luxury rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 border border-amber-500/30">
+      <div class="flex items-center justify-between pb-3.5 border-b border-white/10">
+        <div class="flex items-center space-x-2.5">
+          <div class="p-1.5 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-400">
+            <i data-lucide="sliders" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-base text-slate-100">Customize Audit & Report Options</h3>
+        </div>
+        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+      
+      <p class="text-xs text-slate-400">Choose which audit sections, telemetry, and forensic deliverables to include in the generated reports:</p>
+
+      <div class="space-y-2.5 text-xs text-slate-200 max-h-96 overflow-y-auto pr-1">
+        <label class="flex items-center space-x-3 p-3 rounded-xl bg-obsidian-950/60 border border-white/5 hover:border-amber-500/30 cursor-pointer transition">
+          <input type="checkbox" id="pref-exec" checked class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+          <div>
+            <div class="font-bold text-slate-200">1. Executive Summary</div>
+            <div class="text-[11px] text-slate-400">High-level risk narrative and business posture analysis.</div>
+          </div>
+        </label>
+
+        <label class="flex items-center space-x-3 p-3 rounded-xl bg-obsidian-950/60 border border-white/5 hover:border-amber-500/30 cursor-pointer transition">
+          <input type="checkbox" id="pref-telemetry" checked class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+          <div>
+            <div class="font-bold text-slate-200">2. AI Model Telemetry ("What was tried & returned")</div>
+            <div class="text-[11px] text-slate-400">Full forensic table of every probe, request payload, response status, and latency.</div>
+          </div>
+        </label>
+
+        <label class="flex items-center space-x-3 p-3 rounded-xl bg-obsidian-950/60 border border-white/5 hover:border-amber-500/30 cursor-pointer transition">
+          <input type="checkbox" id="pref-paths" checked class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+          <div>
+            <div class="font-bold text-slate-200">3. Mermaid Attack Path Kill Chains</div>
+            <div class="text-[11px] text-slate-400">Multi-hop kill chain visual diagrams and MITRE ATT&CK mapping.</div>
+          </div>
+        </label>
+
+        <label class="flex items-center space-x-3 p-3 rounded-xl bg-obsidian-950/60 border border-white/5 hover:border-amber-500/30 cursor-pointer transition">
+          <input type="checkbox" id="pref-catalog" checked class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+          <div>
+            <div class="font-bold text-slate-200">4. Discovered Vulnerability Catalog</div>
+            <div class="text-[11px] text-slate-400">List of all confirmed vulnerabilities with CVE/CWE and CVSS scores.</div>
+          </div>
+        </label>
+
+        <label class="flex items-center space-x-3 p-3 rounded-xl bg-obsidian-950/60 border border-white/5 hover:border-amber-500/30 cursor-pointer transition">
+          <input type="checkbox" id="pref-matrix" checked class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+          <div>
+            <div class="font-bold text-slate-200">5. 100+ Check Test Suite Evaluation Matrix</div>
+            <div class="text-[11px] text-slate-400">Evaluation status across Auth, BOLA, Logic, API, Injection, and Config.</div>
+          </div>
+        </label>
+
+        <label class="flex items-center space-x-3 p-3 rounded-xl bg-obsidian-950/60 border border-white/5 hover:border-amber-500/30 cursor-pointer transition">
+          <input type="checkbox" id="pref-evidence" checked class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+          <div>
+            <div class="font-bold text-slate-200">6. Technical Forensic Proofs & Raw Evidence</div>
+            <div class="text-[11px] text-slate-400">Raw HTTP request and response snapshots for verified vulnerabilities.</div>
+          </div>
+        </label>
+
+        <label class="flex items-center space-x-3 p-3 rounded-xl bg-obsidian-950/60 border border-white/5 hover:border-amber-500/30 cursor-pointer transition">
+          <input type="checkbox" id="pref-roadmap" checked class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+          <div>
+            <div class="font-bold text-slate-200">7. Prioritized Remediation Roadmap</div>
+            <div class="text-[11px] text-slate-400">P1–P3 strategic and technical mitigation action items.</div>
+          </div>
+        </label>
+
+        <label class="flex items-center space-x-3 p-3 rounded-xl bg-amber-950/25 border border-amber-500/30 hover:border-amber-500/50 cursor-pointer mt-3 transition">
+          <input type="checkbox" id="pref-deep-scan" checked class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+          <div>
+            <div class="font-bold text-amber-300">Run Deep 100+ Check Catalog Scan</div>
+            <div class="text-[11px] text-slate-400">Executes comprehensive tests across all discovered routes.</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-end space-x-2 pt-4 border-t border-white/10">
+        <button onclick="closeConfigModal()" class="px-5 py-2.5 rounded-xl glass-btn-luxury text-xs">Save Preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Targeted Vulnerability Selector Modal (Pentest-Book & OWASP WSTG Checklist) -->
+  <div id="vuln-modal" class="fixed inset-0 bg-black/80 backdrop-blur-2xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel-luxury rounded-2xl max-w-3xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col border border-emerald-500/30">
+      <div class="flex items-center justify-between pb-3.5 border-b border-white/10 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-100 flex items-center space-x-2">
+              <span>Web VAPT Security Testing Checklist</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 uppercase">OWASP WSTG / Pentest-Book Standard</span>
+            </h3>
+            <p class="text-xs text-slate-400">Select specific security audit suites or customize check selection before launching your scan.</p>
+          </div>
+        </div>
+        <button onclick="closeVulnModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+
+      <!-- Quick Preset Profile Filters (Pentest-Book Suite Profiles) -->
+      <div class="space-y-1.5 flex-shrink-0">
+        <div class="text-[11px] uppercase tracking-wider text-amber-200/90 font-semibold flex items-center justify-between">
+          <span>Pentest-Book & OWASP Focus Presets:</span>
+          <span class="text-[10px] text-amber-400 font-mono">1 Click Profile Switcher</span>
+        </div>
+        <div class="flex flex-wrap gap-1.5 text-xs">
+          <button onclick="selectVulnPreset('all')" class="px-3 py-1 rounded-lg glass-btn-secondary text-amber-300 font-medium">⚡ Full Suite (100)</button>
+          <button onclick="selectVulnPreset('owasp')" class="px-3 py-1 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-500/30 font-medium transition">🎯 OWASP Top 10</button>
+          <button onclick="selectVulnPreset('sqli')" class="px-3 py-1 rounded-lg bg-rose-950/60 hover:bg-rose-900/70 text-rose-300 border border-rose-500/30 font-medium transition">💉 Injection Flaws</button>
+          <button onclick="selectVulnPreset('auth')" class="px-3 py-1 rounded-lg glass-btn-secondary text-slate-300 font-medium">🔐 Auth & Sessions</button>
+          <button onclick="selectVulnPreset('bola')" class="px-3 py-1 rounded-lg glass-btn-secondary text-slate-300 font-medium">🛡️ BOLA & Access</button>
+          <button onclick="selectVulnPreset('api')" class="px-3 py-1 rounded-lg glass-btn-secondary text-slate-300 font-medium">🔌 API & GraphQL</button>
+          <button onclick="selectVulnPreset('config')" class="px-3 py-1 rounded-lg glass-btn-secondary text-slate-300 font-medium">🧱 Misconfig & Headers</button>
+          <button onclick="selectVulnPreset('info')" class="px-3 py-1 rounded-lg glass-btn-secondary text-slate-300 font-medium">🔍 Info Disclosure</button>
+          <button onclick="selectVulnPreset('clear')" class="px-3 py-1 rounded-lg glass-btn-secondary text-slate-400 font-medium">❌ Clear All</button>
+        </div>
+      </div>
+
+      <!-- Real-Time Search Filter -->
+      <div class="relative flex items-center flex-shrink-0">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5"></i>
+        <input type="text" id="vuln-search-input" oninput="filterVulnChecks()" placeholder="Search pentest checklist by test name, check ID, CWE, or WSTG code (e.g. sqli, xss, wstg-inpv, cwe-89)..." 
+               class="w-full pl-10 pr-4 py-2 glass-input rounded-xl text-xs text-slate-100 placeholder-slate-500">
+      </div>
+
+      <!-- Scrollable Checklist Container -->
+      <div id="vuln-checklist-container" class="flex-1 overflow-y-auto space-y-2.5 pr-1 text-xs">
+        <div class="text-slate-500 text-center py-8">Loading vulnerability catalog...</div>
+      </div>
+
+      <!-- Footer with Counter & Apply / Launch -->
+      <div class="flex items-center justify-between pt-3.5 border-t border-white/10 flex-shrink-0">
+        <span id="vuln-modal-status" class="text-xs font-mono font-semibold text-emerald-400">100 of 100 checks selected (100% pentest coverage)</span>
+        <div class="flex items-center space-x-2.5">
+          <button onclick="closeVulnModal()" class="px-4 py-2 rounded-xl glass-btn-secondary text-xs">Save Selection</button>
+          <button onclick="startScanFromChecklist()" class="px-5 py-2 rounded-xl glass-btn-luxury text-xs flex items-center space-x-1.5">
+            <i data-lucide="play" class="w-3.5 h-3.5 fill-white"></i>
+            <span>Launch Audit with Selected Checks</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Launch Strategy & Vulnerability Selection Modal -->
+  <div id="audit-launch-modal" class="fixed inset-0 bg-black/80 backdrop-blur-2xl z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel-luxury rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 border border-amber-500/30">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3.5 border-b border-white/10">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-luxury-500 to-amber-700 p-[1px] shadow-lg shadow-amber-500/25">
+            <div class="w-full h-full rounded-[11px] bg-obsidian-950/90 flex items-center justify-center">
+              <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-100">Configure Security Audit & Vulnerabilities</h3>
+            <p class="text-xs text-slate-400">Select what vulnerabilities you want to test before launching</p>
+          </div>
+        </div>
+        <button onclick="closeLaunchModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+
+      <!-- Scope Target Summary Card -->
+      <div class="p-4 bg-obsidian-950/70 rounded-xl border border-white/10 text-xs flex items-center justify-between font-mono">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="crosshair" class="w-4 h-4 text-amber-400"></i>
+          <span class="text-slate-400">Target Scope:</span>
+          <span id="launch-target-display" class="font-bold text-amber-300">localhost</span>
+          <span id="launch-endpoint-display" class="text-slate-400"></span>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full bg-amber-950/60 text-amber-300 border border-amber-500/30 text-[10px] font-semibold">Ready</span>
+      </div>
+
+      <!-- Vulnerability Selection Pre-Check Banner -->
+      <div class="p-4 rounded-xl bg-emerald-950/25 border border-emerald-500/30 space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-xs text-emerald-300 flex items-center space-x-1.5">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+            <span>Vulnerability Scope Status</span>
+          </span>
+          <span id="launch-modal-badge" class="px-2.5 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">100 / 100 Checks Pre-Selected</span>
+        </div>
+        <p class="text-xs text-slate-300">
+          By default, <b class="text-emerald-300">ALL 100+ vulnerability checks</b> across SQLi, XSS, RCE, Auth, BOLA, API, and Misconfigurations are already selected for testing.
+        </p>
+      </div>
+
+      <!-- Question Prompt & Mode Selection -->
+      <div class="space-y-3">
+        <label class="block text-xs font-bold uppercase tracking-wider text-amber-200/90">Which testing method would you like to use?</label>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <!-- Automatic Testing Card (Spatial Tilt) -->
+          <div onclick="launchAutomaticTesting()" class="spatial-card p-4 rounded-xl glass-card border-2 border-amber-500/60 hover:border-amber-400 cursor-pointer transition flex flex-col justify-between group shadow-xl">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-sm text-amber-300 group-hover:text-amber-200 flex items-center space-x-1.5">
+                  <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+                  <span>Automatic Testing</span>
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono border border-amber-500/30">DEFAULT</span>
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Runs full continuous automated penetration testing with all vulnerabilities pre-selected. No manual changes required.
+              </p>
+            </div>
+            <button class="mt-4 w-full py-2.5 rounded-xl glass-btn-luxury text-xs shadow flex items-center justify-center space-x-1.5">
+              <span>⚡ Launch Automatic Scan</span>
+            </button>
+          </div>
+
+          <!-- Manual Testing Checklist Card (Spatial Tilt) -->
+          <div onclick="openManualChecklistFromLaunch()" class="spatial-card p-4 rounded-xl glass-card hover:border-emerald-500/60 cursor-pointer transition flex flex-col justify-between group shadow">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-sm text-slate-200 group-hover:text-emerald-300 flex items-center space-x-1.5">
+                  <i data-lucide="list-checks" class="w-4 h-4 text-emerald-400"></i>
+                  <span>Manual Testing</span>
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-obsidian-950 text-slate-300 font-bold font-mono border border-white/10">CHECKLIST</span>
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Open the manual vulnerability checklist to inspect, filter, or deselect specific vulnerability suites before scanning.
+              </p>
+            </div>
+            <button class="mt-4 w-full py-2.5 rounded-xl glass-btn-secondary text-emerald-300 border border-emerald-500/30 text-xs flex items-center justify-center space-x-1.5">
+              <span>🛠️ Customize Checklist</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="flex items-center justify-between pt-3.5 border-t border-white/10 text-[11px] text-slate-400">
+        <span class="flex items-center space-x-1.5">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Old audit reports are automatically cleared on launch.</span>
+        </span>
+        <button onclick="closeLaunchModal()" class="text-slate-400 hover:text-slate-200 transition">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-white/5 py-4 text-center text-xs text-slate-500 bg-obsidian-950/60 backdrop-blur-md">
+    VYASA Autonomous Security Platform &bull; Powered by Local Qwen 2.5 AI Reasoning Engine
+  </footer>
+
+  <!-- Application Logic & Spatial UI Engine -->
+  <script>
+    lucide.createIcons();
+    let currentScanId = null;
+    let pollInterval = null;
+
+    // Spatial UI 3D Tilt & Specular Lighting Engine (Zero-Jitter LERP Physics)
+    function initSpatialEngine() {
+      const cards = document.querySelectorAll('.spatial-card');
+      cards.forEach(card => {
+        let glare = card.querySelector('.spatial-glare');
+        if (!glare) {
+          glare = document.createElement('div');
+          glare.className = 'spatial-glare';
+          card.appendChild(glare);
+        }
+
+        let rect = null;
+        let targetRotX = 0;
+        let targetRotY = 0;
+        let currentRotX = 0;
+        let currentRotY = 0;
+        let targetGlareX = 50;
+        let targetGlareY = 50;
+        let currentGlareX = 50;
+        let currentGlareY = 50;
+        let isHovered = false;
+        let rafId = null;
+
+        function updateCardFrame() {
+          if (!isHovered && Math.abs(currentRotX) < 0.02 && Math.abs(currentRotY) < 0.02) {
+            currentRotX = 0;
+            currentRotY = 0;
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+            glare.style.opacity = '0';
+            rafId = null;
+            return;
+          }
+
+          // Smooth VisionOS Damping Factor (LERP)
+          const damping = isHovered ? 0.14 : 0.08;
+          currentRotX += (targetRotX - currentRotX) * damping;
+          currentRotY += (targetRotY - currentRotY) * damping;
+          currentGlareX += (targetGlareX - currentGlareX) * damping;
+          currentGlareY += (targetGlareY - currentGlareY) * damping;
+
+          const zDepth = isHovered ? 8 : 0;
+          card.style.transform = `perspective(1000px) rotateX(${currentRotX.toFixed(2)}deg) rotateY(${currentRotY.toFixed(2)}deg) translateZ(${zDepth}px)`;
+
+          glare.style.background = `radial-gradient(circle 240px at ${currentGlareX.toFixed(1)}% ${currentGlareY.toFixed(1)}%, rgba(255, 255, 255, 0.22) 0%, rgba(212, 175, 55, 0.10) 35%, transparent 75%)`;
+
+          rafId = requestAnimationFrame(updateCardFrame);
+        }
+
+        card.addEventListener('mouseenter', () => {
+          rect = card.getBoundingClientRect();
+          isHovered = true;
+          card.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+          glare.style.opacity = '1';
+
+          if (!rafId) {
+            rafId = requestAnimationFrame(updateCardFrame);
+          }
+        });
+
+        card.addEventListener('mousemove', (e) => {
+          if (!rect || rect.width === 0 || rect.height === 0) {
+            rect = card.getBoundingClientRect();
+          }
+          if (!rect || rect.width === 0 || rect.height === 0) return;
+
+          // Guard against button/input slip: zero tilt when cursor hovers interactive controls
+          if (e.target.closest('button, input, textarea, a, select, pre, code')) {
+            targetRotX = 0;
+            targetRotY = 0;
+            return;
+          }
+
+          // Use CACHED rect from mouseenter so 3D rotation does not cause recursive jitter
+          const mouseX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+          const mouseY = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+
+          const normX = (mouseX / rect.width) * 2 - 1;   // -1 to +1
+          const normY = (mouseY / rect.height) * 2 - 1;  // -1 to +1
+
+          // Refined luxury tilt bounds (±4.5 degrees)
+          targetRotX = -normY * 4.5;
+          targetRotY = normX * 4.5;
+
+          targetGlareX = (mouseX / rect.width) * 100;
+          targetGlareY = (mouseY / rect.height) * 100;
+
+          if (!rafId) {
+            rafId = requestAnimationFrame(updateCardFrame);
+          }
+        });
+
+        card.addEventListener('mouseleave', () => {
+          isHovered = false;
+          rect = null;
+          targetRotX = 0;
+          targetRotY = 0;
+          targetGlareX = 50;
+          targetGlareY = 50;
+
+          // Let rAF smoothly glide to rest with damping
+          if (!rafId) {
+            rafId = requestAnimationFrame(updateCardFrame);
+          }
+        });
+
+        window.addEventListener('scroll', () => {
+          if (isHovered) {
+            rect = card.getBoundingClientRect();
+          }
+        }, { passive: true });
+      });
+
+      // Spatial Background Parallax (Smooth LERP)
+      let orbTargetX = 0;
+      let orbTargetY = 0;
+      let orbCurrentX = 0;
+      let orbCurrentY = 0;
+      let orbRafId = null;
+
+      function updateParallaxOrbs() {
+        orbCurrentX += (orbTargetX - orbCurrentX) * 0.05;
+        orbCurrentY += (orbTargetY - orbCurrentY) * 0.05;
+
+        const orb1 = document.getElementById('spatial-orb-gold');
+        const orb2 = document.getElementById('spatial-orb-violet');
+        const orb3 = document.getElementById('spatial-orb-emerald');
+
+        if (orb1) orb1.style.transform = `translate3d(${(orbCurrentX * -0.8).toFixed(2)}px, ${(orbCurrentY * -0.8).toFixed(2)}px, 0)`;
+        if (orb2) orb2.style.transform = `translate3d(${(orbCurrentX * 1.0).toFixed(2)}px, ${(orbCurrentY * 1.0).toFixed(2)}px, 0)`;
+        if (orb3) orb3.style.transform = `translate3d(${(orbCurrentX * 0.5).toFixed(2)}px, ${(orbCurrentY * 0.5).toFixed(2)}px, 0)`;
+
+        if (Math.abs(orbTargetX - orbCurrentX) > 0.02 || Math.abs(orbTargetY - orbCurrentY) > 0.02) {
+          orbRafId = requestAnimationFrame(updateParallaxOrbs);
+        } else {
+          orbRafId = null;
+        }
+      }
+
+      window.addEventListener('mousemove', (e) => {
+        orbTargetX = (e.clientX / window.innerWidth - 0.5) * 22;
+        orbTargetY = (e.clientY / window.innerHeight - 0.5) * 22;
+        if (!orbRafId) {
+          orbRafId = requestAnimationFrame(updateParallaxOrbs);
+        }
+      }, { passive: true });
+    }
+
+    // Theme Management (Dark & Light Luxury Themes)
+    function applyTheme(theme) {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-toggle-icon');
+      const label = document.getElementById('theme-toggle-label');
+      
+      if (theme === 'light') {
+        html.classList.remove('dark');
+        html.classList.add('light');
+        if (label) label.innerText = 'Dark Mode';
+        if (icon) {
+          icon.setAttribute('data-lucide', 'moon');
+          icon.className = 'w-3.5 h-3.5 text-royal-500 group-hover:-rotate-12 transition-transform duration-300';
+        }
+      } else {
+        html.classList.remove('light');
+        html.classList.add('dark');
+        if (label) label.innerText = 'Light Mode';
+        if (icon) {
+          icon.setAttribute('data-lucide', 'sun');
+          icon.className = 'w-3.5 h-3.5 text-amber-400 group-hover:rotate-45 transition-transform duration-300';
+        }
+      }
+      localStorage.setItem('vyasa-theme', theme);
+      try { lucide.createIcons(); } catch(e) {}
+    }
+
+    function toggleTheme() {
+      const isLight = document.documentElement.classList.contains('light');
+      applyTheme(isLight ? 'dark' : 'light');
+    }
+
+    // Initialize Theme on startup
+    const initialTheme = localStorage.getItem('vyasa-theme') || 'dark';
+    applyTheme(initialTheme);
+
+    function setTarget(val) {
+      document.getElementById('target-input').value = val;
+    }
+
+    let autoScroll = true;
+    let lastRenderedLogCount = 0;
+
+    function toggleAutoScroll() {
+      autoScroll = !autoScroll;
+      const btn = document.getElementById('autoscroll-btn');
+      btn.innerText = autoScroll ? 'Auto-Scroll: ON' : 'Auto-Scroll: OFF';
+      btn.classList.toggle('text-amber-300', autoScroll);
+      btn.classList.toggle('text-slate-400', !autoScroll);
+    }
+
+    function clearTerminal() {
+      document.getElementById('web-terminal-logs').innerHTML = '<div class="text-slate-500 italic">[TERMINAL CLEARED]</div>';
+      lastRenderedLogCount = 0;
+    }
+
+    function copyTerminal() {
+      const text = document.getElementById('web-terminal-logs').innerText;
+      navigator.clipboard.writeText(text);
+      alert('Terminal logs copied to clipboard!');
+    }
+
+    function updateTerminalLogs(logs) {
+      if (!logs || logs.length === 0) return;
+      const container = document.getElementById('web-terminal-logs');
+      if (logs.length === lastRenderedLogCount) return;
+
+      for (let i = lastRenderedLogCount; i < logs.length; i++) {
+        const line = logs[i];
+        const div = document.createElement('div');
+        
+        if (line.includes('[VULNERABLE]') || line.includes('[ERROR]')) {
+          div.className = "text-rose-400 font-semibold drop-shadow-[0_0_8px_rgba(244,63,94,0.35)]";
+        } else if (line.includes('[SECURE]')) {
+          div.className = "text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.35)]";
+        } else if (line.includes('[AI_REASONING]')) {
+          div.className = "text-amber-300 font-medium drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]";
+        } else if (line.includes('[START]') || line.includes('[COMPLETED]')) {
+          div.className = "text-royal-400 font-bold drop-shadow-[0_0_8px_rgba(139,92,246,0.3)]";
+        } else {
+          div.className = "text-slate-300";
+        }
+
+        div.textContent = line;
+        container.appendChild(div);
+      }
+      lastRenderedLogCount = logs.length;
+
+      if (autoScroll) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function openConfigModal() {
+      document.getElementById('config-modal').classList.remove('hidden');
+    }
+
+    function closeConfigModal() {
+      document.getElementById('config-modal').classList.add('hidden');
+    }
+
+    function onLaunchAuditClick() {
+      const target = document.getElementById('target-input').value.trim();
+      if (!target) return alert('Please enter a target host or domain first.');
+
+      if (!catalogData || catalogData.length === 0) {
+        loadCatalog();
+      } else if (selectedCheckIds.size === 0) {
+        selectedCheckIds = new Set(catalogData.map(c => c.check_id));
+        updateSelectedVulnsBadge();
+      }
+
+      document.getElementById('launch-target-display').innerText = target;
+      const ep = document.getElementById('endpoint-input') ? document.getElementById('endpoint-input').value.trim() : '';
+      document.getElementById('launch-endpoint-display').innerText = ep ? ` (${ep})` : '';
+
+      updateLaunchModalBadge();
+      document.getElementById('audit-launch-modal').classList.remove('hidden');
+      try { lucide.createIcons(); } catch (err) {}
+    }
+
+    function closeLaunchModal() {
+      document.getElementById('audit-launch-modal').classList.add('hidden');
+    }
+
+    function updateLaunchModalBadge() {
+      const badge = document.getElementById('launch-modal-badge');
+      if (!badge) return;
+      const count = selectedCheckIds.size;
+      const total = catalogData.length || 100;
+      badge.innerText = `${count} / ${total} Checks Selected`;
+    }
+
+    function launchAutomaticTesting() {
+      closeLaunchModal();
+      if (selectedCheckIds.size === 0 && catalogData.length > 0) {
+        selectedCheckIds = new Set(catalogData.map(c => c.check_id));
+        updateSelectedVulnsBadge();
+      }
+      startScan();
+    }
+
+    function openManualChecklistFromLaunch() {
+      closeLaunchModal();
+      openVulnModal();
+    }
+
+    function startScanFromChecklist() {
+      closeVulnModal();
+      startScan();
+    }
+
+    async function clearAllReports() {
+      if (!confirm('Are you sure you want to clear all previous audit reports?')) return;
+      try {
+        await fetch('/api/reports', { method: 'DELETE' });
+        await loadReportsList();
+      } catch (e) {
+        alert('Failed to clear reports: ' + e);
+      }
+    }
+
+    async function startScan() {
+      const target = document.getElementById('target-input').value.trim();
+      if (!target) return alert('Please enter a target host or domain');
+
+      const selectedChecks = getSelectedCheckIds();
+      if (selectedChecks.length === 0) {
+        return alert('No vulnerability checks selected! Please open the Vulnerability Checklist and select at least one check.');
+      }
+
+      const btn = document.getElementById('start-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-white"></i><span>Auditing...</span>`;
+      lucide.createIcons();
+
+      // Reset UI & Terminal & Reports List
+      resetUI();
+      clearTerminal();
+      document.getElementById('reports-list').innerHTML = '<div class="p-3 bg-obsidian-950/80 rounded-xl border border-white/5 text-amber-300 italic font-mono">Clearing old reports and starting fresh audit...</div>';
+      document.getElementById('engine-status').innerText = `Auditing: ${target}`;
+      document.getElementById('engine-status').parentElement.classList.replace('border-emerald-500/25', 'border-amber-500/50');
+
+      const deepScan = document.getElementById('pref-deep-scan') ? document.getElementById('pref-deep-scan').checked : true;
+      const endpoint = document.getElementById('endpoint-input') ? document.getElementById('endpoint-input').value.trim() : null;
+
+      const preferences = {
+        include_executive_summary: document.getElementById('pref-exec') ? document.getElementById('pref-exec').checked : true,
+        include_investigation_telemetry: document.getElementById('pref-telemetry') ? document.getElementById('pref-telemetry').checked : true,
+        include_attack_paths: document.getElementById('pref-paths') ? document.getElementById('pref-paths').checked : true,
+        include_vulnerability_catalog: document.getElementById('pref-catalog') ? document.getElementById('pref-catalog').checked : true,
+        include_full_test_matrix: document.getElementById('pref-matrix') ? document.getElementById('pref-matrix').checked : true,
+        include_raw_evidence: document.getElementById('pref-evidence') ? document.getElementById('pref-evidence').checked : true,
+        include_remediation_roadmap: document.getElementById('pref-roadmap') ? document.getElementById('pref-roadmap').checked : true
+      };
+
+      try {
+        const res = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            target: target,
+            endpoint: endpoint || null,
+            deep_scan: deepScan,
+            fast: true,
+            selected_checks: selectedChecks.length === (catalogData?.length || 100) ? null : selectedChecks,
+            preferences: preferences,
+            clear_old_reports: true
+          })
+        });
+        const data = await res.json();
+        currentScanId = data.scan_id;
+        pollInterval = setInterval(pollScanStatus, 700);
+        setTimeout(loadReportsList, 1500);
+      } catch (err) {
+        alert('Failed to trigger scan: ' + err);
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="play" class="w-4 h-4 fill-white"></i><span>Launch Autonomous Audit</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    async function pollScanStatus() {
+      if (!currentScanId) return;
+      try {
+        const res = await fetch(`/api/scan/${currentScanId}`);
+        const data = await res.json();
+
+        updateMetrics(data);
+        updateDonut(data);
+        updateStepper(data.current_phase, data);
+        updateReasoningFeed(data.logs, data.decisions);
+        updateTerminalLogs(data.terminal_logs);
+        updateAssetsTable(data);
+        updateFindingsCatalog(data);
+        updateAttackPaths(data.attack_paths);
+
+        if (data.status === 'COMPLETED' || data.status === 'FAILED') {
+          clearInterval(pollInterval);
+          const btn = document.getElementById('start-btn');
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="play" class="w-4 h-4 fill-white"></i><span>Launch Autonomous Audit</span>`;
+          document.getElementById('engine-status').innerText = data.status === 'COMPLETED' ? 'Audit Complete' : 'Audit Failed';
+          lucide.createIcons();
+          loadReportsList();
+        }
+      } catch (e) {
+        console.error("Poll error:", e);
+      }
+    }
+
+    function resetUI() {
+      document.getElementById('reasoning-feed').innerHTML = '';
+      document.getElementById('findings-container').innerHTML = '';
+      document.getElementById('assets-tbody').innerHTML = '';
+      document.getElementById('attack-paths-container').innerHTML = '';
+      ['metric-assets', 'metric-ports', 'metric-findings', 'metric-paths'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.innerText = '0';
+      });
+      STEP_ORDER.forEach(id => setStepState(id, 'pending'));
+      const box = document.getElementById('phase-live');
+      if (box) { box.classList.add('hidden'); box.classList.remove('flex'); }
+    }
+
+    const STEP_ORDER = ['step-recon', 'step-testing', 'step-reasoning', 'step-correlation', 'step-report'];
+    const STEP_MAP = {
+      'START': 'step-recon', 'RECON_START': 'step-recon', 'CRAWL': 'step-recon', 'RECON_COMPLETE': 'step-recon',
+      'TESTING_START': 'step-testing', 'TESTING_COMPLETE': 'step-testing',
+      'DEEP_SCAN_START': 'step-reasoning', 'CHECK': 'step-reasoning', 'DEEP_SCAN_COMPLETE': 'step-reasoning',
+      'REASONING_LOOP_START': 'step-reasoning', 'REASONING_DECISION': 'step-reasoning',
+      'PROBE_EXECUTED': 'step-reasoning', 'REASONING_STOP': 'step-reasoning',
+      'CORRELATION_START': 'step-correlation', 'CORRELATION_COMPLETE': 'step-correlation',
+      'REPORTING_START': 'step-report', 'COMPLETED': 'step-report'
+    };
+    const STEP_LIVE = {
+      'step-recon':       'VYASA is mapping the attack surface',
+      'step-testing':     'VYASA is auditing HTTP & TLS baseline',
+      'step-reasoning':   'VYASA is running autonomous security probes',
+      'step-correlation': 'VYASA is correlating attack paths',
+      'step-report':      'VYASA is synthesizing the report',
+    };
+
+    function setStepState(id, state) {
+      const card = document.getElementById(id);
+      if (!card) return;
+      card.classList.remove('border-amber-500/60', 'bg-amber-950/40', 'shadow-[0_0_15px_rgba(212,175,55,0.25)]',
+        'border-emerald-500/40', 'bg-emerald-950/25', 'shadow-[0_0_14px_rgba(16,185,129,0.2)]');
+      const label = card.querySelector('.step-label');
+      label.classList.remove('text-slate-400', 'text-amber-300', 'text-emerald-300');
+      let ind = card.querySelector('.step-ind');
+      if (!ind) { ind = document.createElement('span'); ind.className = 'step-ind'; label.prepend(ind); }
+      if (state === 'done') {
+        card.classList.add('border-emerald-500/40', 'bg-emerald-950/25', 'shadow-[0_0_14px_rgba(16,185,129,0.2)]');
+        label.classList.add('text-emerald-300'); ind.textContent = '✓ ';
+      } else if (state === 'active') {
+        card.classList.add('border-amber-500/60', 'bg-amber-950/40', 'shadow-[0_0_15px_rgba(212,175,55,0.25)]');
+        label.classList.add('text-amber-300'); ind.textContent = '▶ ';
+      } else {
+        label.classList.add('text-slate-400'); ind.textContent = '';
+      }
+    }
+
+    function updateStepper(phase, data) {
+      const completed = data && data.status === 'COMPLETED';
+      const failed = data && data.status === 'FAILED';
+      const activeId = STEP_MAP[phase] || 'step-recon';
+      let activeIdx = STEP_ORDER.indexOf(activeId);
+      if (completed) activeIdx = STEP_ORDER.length;
+      STEP_ORDER.forEach((id, i) => {
+        if (i < activeIdx) setStepState(id, 'done');
+        else if (i === activeIdx) setStepState(id, 'active');
+        else setStepState(id, 'pending');
+      });
+      updatePhaseLive(activeId, data, completed, failed);
+    }
+
+    function updatePhaseLive(activeId, data, completed, failed) {
+      const box = document.getElementById('phase-live');
+      if (!box) return;
+      if (!currentScanId) { box.classList.add('hidden'); box.classList.remove('flex'); return; }
+      box.classList.remove('hidden'); box.classList.add('flex');
+      const title = document.getElementById('phase-live-title');
+      const sub = document.getElementById('phase-live-sub');
+      const cnt = document.getElementById('phase-live-count');
+      const spin = document.getElementById('phase-spin');
+      if (completed || failed) {
+        spin.classList.remove('animate-spin', 'border-amber-500/25', 'border-t-amber-400');
+        box.classList.remove('border-amber-500/20', 'bg-amber-950/10');
+        if (failed) {
+          spin.style.cssText = 'background:#f43f5e;box-shadow:0 0 10px #f43f5e'; spin.style.border = 'none';
+          box.classList.add('border-rose-500/30', 'bg-rose-950/15');
+          title.className = 'text-sm font-bold text-rose-200 tracking-wide';
+          title.textContent = 'Engagement failed'; sub.textContent = data.error || 'See terminal log for details.'; cnt.textContent = '';
+        } else {
+          spin.style.cssText = 'background:#10b981;box-shadow:0 0 10px #10b981'; spin.style.border = 'none';
+          box.classList.add('border-emerald-500/30', 'bg-emerald-950/15');
+          title.className = 'text-sm font-bold text-emerald-200 tracking-wide';
+          title.textContent = 'Engagement complete'; sub.textContent = 'All phases finished — report generated.';
+          const v = (data.check_feed || []).filter(c => c.verdict === 'VULNERABLE').length;
+          cnt.textContent = ((data.crawl_feed || []).length) + ' endpoints · ' + v + ' vulns';
+        }
+        return;
+      }
+      spin.style.cssText = ''; spin.classList.add('animate-spin', 'border-amber-500/25', 'border-t-amber-400');
+      title.className = 'text-sm font-bold text-amber-200 tracking-wide';
+      title.textContent = (STEP_LIVE[activeId] || 'VYASA is working') + '…';
+      const crawl = data.crawl_feed || [], checks = data.check_feed || [];
+      if (activeId === 'step-recon' && crawl.length) {
+        const last = crawl[crawl.length - 1];
+        sub.textContent = '→ ' + (last.path || last.url || '');
+        cnt.textContent = crawl.length + ' endpoints';
+      } else if (checks.length) {
+        const last = checks[checks.length - 1];
+        sub.textContent = '→ ' + ((last.id ? last.id + ' · ' : '') + (last.title || ''));
+        cnt.textContent = checks.length + ' checks';
+      } else {
+        sub.textContent = 'Working…'; cnt.textContent = '';
+      }
+    }
+
+    function animateCount(el, to) {
+      if (!el) return;
+      const from = parseInt(el.innerText, 10) || 0;
+      if (from === to) { el.innerText = to; return; }
+      const dur = 550, t0 = performance.now();
+      function tick(t) {
+        const p = Math.min(1, (t - t0) / dur);
+        el.innerText = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    const DONUT_SEV = [['CRITICAL','#ff453a'],['HIGH','#ff9f0a'],['MEDIUM','#ffd60a'],['LOW','#64d2ff'],['INFO','#8e98a8']];
+    function updateDonut(data) {
+      const svg = document.getElementById('donut-arcs');
+      if (!svg) return;
+      const counts = { CRITICAL:0, HIGH:0, MEDIUM:0, LOW:0, INFO:0 };
+      // Prefer final report findings; else live confirmed (VULNERABLE) checks.
+      const findings = (data.findings && data.findings.length) ? data.findings : null;
+      if (findings) {
+        findings.forEach(f => { const s = (f.severity||'INFO').toUpperCase(); counts[s] = (counts[s]||0)+1; });
+      } else {
+        (data.check_feed||[]).filter(c => c.verdict === 'VULNERABLE').forEach(c => {
+          const m = catMeta(c.id); const s = (m.severity || 'MEDIUM').toUpperCase(); counts[s] = (counts[s]||0)+1;
+        });
+      }
+      const total = Object.values(counts).reduce((a,b)=>a+b,0);
+      const el = document.getElementById('donut-total'); if (el) animateCount(el, total);
+      const C = 2 * Math.PI * 58; let off = 0; let arcs = '';
+      DONUT_SEV.forEach(([s,col]) => {
+        const v = counts[s] || 0;
+        if (v > 0 && total > 0) {
+          const len = v/total*C;
+          arcs += `<circle cx="76" cy="76" r="58" fill="none" stroke="${col}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${Math.max(0,len-3)} ${C-Math.max(0,len-3)}" stroke-dashoffset="${-off}"/>`;
+          off += len;
+        }
+      });
+      svg.innerHTML = arcs;
+      const leg = document.getElementById('donut-legend');
+      if (leg) leg.innerHTML = DONUT_SEV.map(([s,col]) =>
+        `<div class="flex items-center gap-2.5 text-[13px]"><span class="w-3 h-3 rounded-[4px]" style="background:${col};box-shadow:0 0 8px ${(counts[s]||0)?col+'88':'transparent'}"></span><span class="text-slate-400">${s[0]+s.slice(1).toLowerCase()}</span><span class="ml-auto font-bold font-mono" style="color:${(counts[s]||0)?col:'#64748b'}">${counts[s]||0}</span></div>`
+      ).join('');
+    }
+
+    function updateMetrics(data) {
+      const assets = data.assets || [];
+      const crawl = data.crawl_feed || [];
+      const checks = data.check_feed || [];
+      const vuln = checks.filter(c => c.verdict === 'VULNERABLE').length;
+      // Assets Mapped: discovered hosts, else live endpoints discovered
+      const assetsN = assets.length || crawl.length || 0;
+      // Open Ports: summed across discovered hosts
+      let ports = 0; assets.forEach(a => ports += (a.open_ports?.length || 0));
+      // Findings Catalog: final report findings, else live confirmed (VULNERABLE) checks
+      const findingsN = (data.findings && data.findings.length) || vuln || 0;
+      // Attack Paths: synthesized kill-chains
+      const pathsN = (data.attack_paths && data.attack_paths.length) || 0;
+      animateCount(document.getElementById('metric-assets'), assetsN);
+      animateCount(document.getElementById('metric-ports'), ports);
+      animateCount(document.getElementById('metric-findings'), findingsN);
+      animateCount(document.getElementById('metric-paths'), pathsN);
+    }
+
+    function updateReasoningFeed(logs, decisions) {
+      const feed = document.getElementById('reasoning-feed');
+      if (!logs || logs.length === 0) return;
+
+      feed.innerHTML = '';
+      logs.forEach(log => {
+        let blockClass = "border-white/5 bg-obsidian-950/70 text-slate-300";
+        let icon = "info";
+
+        if (log.phase === 'REASONING_DECISION') {
+          blockClass = "border-amber-500/40 bg-amber-950/30 text-amber-200 shadow-[0_4px_20px_rgba(212,175,55,0.1)]";
+          icon = "sparkles";
+        } else if (log.phase === 'PROBE_EXECUTED') {
+          blockClass = "border-royal-500/40 bg-royal-950/30 text-royal-200";
+          icon = "zap";
+        } else if (log.phase === 'CORRELATION_COMPLETE') {
+          blockClass = "border-rose-500/40 bg-rose-950/30 text-rose-200";
+          icon = "swords";
+        }
+
+        const div = document.createElement('div');
+        div.className = `p-3.5 rounded-xl border text-xs ${blockClass} space-y-1.5 transition-all`;
+        
+        let detailsHtml = '';
+        if (log.data?.decision) {
+          detailsHtml = `
+            <div class="mt-2 pt-2 border-t border-amber-500/20 text-[11px] space-y-1">
+              <div><span class="text-amber-400 font-bold">Hypothesis:</span> ${log.data.decision.hypothesis}</div>
+              <div><span class="text-amber-400 font-bold">Rationale:</span> ${log.data.decision.rationale}</div>
+            </div>`;
+        }
+
+        div.innerHTML = `
+          <div class="flex items-center justify-between font-mono text-[10px] text-slate-400">
+            <span class="px-2 py-0.5 rounded-full bg-obsidian-950 border border-white/10 font-semibold text-amber-300/90">${log.phase}</span>
+            <span>${log.timestamp}</span>
+          </div>
+          <div class="pt-1">${log.message}</div>
+          ${detailsHtml}
+        `;
+        feed.appendChild(div);
+      });
+
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function updateAssetsTable(data) {
+      const tbody = document.getElementById('assets-tbody');
+      const assets = (data && data.assets) || [];
+      if (assets.length) {
+        tbody.innerHTML = '';
+        assets.forEach(a => {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-amber-400/5 transition";
+          const ports = a.open_ports?.join(', ') || 'None';
+          const stack = a.technologies?.slice(0, 3).join(', ') || 'Standard';
+          tr.innerHTML = `
+            <td class="py-3 font-bold text-amber-300">${a.host} <span class="block text-[10px] text-slate-500 font-normal">${a.ip || ''}</span></td>
+            <td class="py-3 text-slate-300 font-mono">${ports}</td>
+            <td class="py-3 text-slate-400 truncate max-w-[140px]">${stack}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        return;
+      }
+      // Live fallback: show endpoints discovered during crawl so the table fills in real time
+      const crawl = (data && data.crawl_feed) || [];
+      if (!crawl.length) return;
+      tbody.innerHTML = '';
+      crawl.slice(-14).reverse().forEach(e => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-amber-400/5 transition";
+        tr.innerHTML = `
+          <td class="py-3 font-bold text-amber-300 truncate max-w-[180px]">${esc(e.path || e.url || '/')}</td>
+          <td class="py-3 text-slate-400 font-mono text-[10px]">endpoint</td>
+          <td class="py-3 text-slate-400 truncate max-w-[140px]">discovered</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    function catMeta(id) { return (typeof catalogData !== 'undefined' && catalogData || []).find(c => c.check_id === id) || {}; }
+
+    function sevBadge(sev) {
+      let c = "bg-obsidian-950 text-slate-300 border border-white/10";
+      if (sev === 'CRITICAL') c = "bg-rose-950/80 text-rose-300 border border-rose-600/60 shadow-[0_0_10px_rgba(244,63,94,0.3)]";
+      else if (sev === 'HIGH') c = "bg-amber-950/80 text-amber-300 border border-amber-600/60 shadow-[0_0_10px_rgba(217,119,6,0.3)]";
+      else if (sev === 'MEDIUM') c = "bg-yellow-950/80 text-yellow-300 border border-yellow-600/60";
+      else if (sev === 'LOW') c = "bg-sky-950/80 text-sky-300 border border-sky-600/60";
+      return c;
+    }
+
+    function updateFindingsCatalog(data) {
+      const container = document.getElementById('findings-container');
+      const findings = (data && data.findings) || [];
+      if (findings.length) {
+        container.innerHTML = '';
+        findings.forEach(f => {
+          const div = document.createElement('div');
+          div.className = "p-3.5 rounded-xl bg-obsidian-950/70 border border-white/5 hover:border-amber-500/30 transition space-y-1.5 shadow-sm";
+          div.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold ${sevBadge(f.severity)}">${esc(f.severity)}</span>
+              <span class="text-[10px] font-mono text-slate-400">${esc(f.cve_id || '')}</span>
+            </div>
+            <div class="font-bold text-slate-100 pt-1 text-xs">${esc(f.title)}</div>
+            <div class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">${esc(f.description)}</div>
+            <div class="text-[10px] font-mono text-amber-400/90 pt-1">Evidence: ${esc(f.evidence || 'Verified response')}</div>
+          `;
+          container.appendChild(div);
+        });
+        return;
+      }
+      // Live fallback: confirmed (VULNERABLE) checks streaming in before the final report is built
+      const vuln = ((data && data.check_feed) || []).filter(c => c.verdict === 'VULNERABLE');
+      if (!vuln.length) return;
+      container.innerHTML = '';
+      vuln.slice().reverse().forEach(c => {
+        const m = catMeta(c.id);
+        const sev = (m.severity || 'MEDIUM').toUpperCase();
+        const div = document.createElement('div');
+        div.className = "p-3.5 rounded-xl bg-obsidian-950/70 border border-white/5 hover:border-amber-500/30 transition space-y-1.5 shadow-sm";
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold ${sevBadge(sev)}">${sev}</span>
+            <span class="text-[10px] font-mono text-slate-400">${esc(c.id || '')}</span>
+          </div>
+          <div class="font-bold text-slate-100 pt-1 text-xs">${esc(c.title || m.title || 'Confirmed finding')}</div>
+          <div class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">${esc(m.description || c.category || 'Confirmed during live scan.')}</div>
+          <div class="text-[10px] font-mono text-emerald-400/90 pt-1">✓ Confirmed · ${esc(c.category || 'live probe')}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function updateAttackPaths(paths) {
+      const container = document.getElementById('attack-paths-container');
+      if (!paths || paths.length === 0) return;
+
+      container.innerHTML = '';
+      paths.forEach((p, idx) => {
+        const div = document.createElement('div');
+        div.className = "p-5 rounded-2xl bg-obsidian-950/80 border border-rose-500/30 shadow-xl space-y-3.5";
+        
+        let stepsHtml = '';
+        p.steps?.forEach(s => {
+          stepsHtml += `
+            <div class="flex items-start space-x-3 text-xs">
+              <span class="h-5 w-5 rounded-full bg-rose-950 border border-rose-600 text-rose-300 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5 shadow-[0_0_6px_rgba(244,63,94,0.4)]">${s.step_order}</span>
+              <div>
+                <span class="font-bold text-slate-100">${s.title}</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-obsidian-900 border border-white/10 text-slate-400 ml-1.5">${s.technique}</span>
+                <p class="text-slate-400 text-[11px] mt-0.5">${s.action_taken} &rarr; <span class="text-rose-400 font-medium">${s.impact}</span></p>
+              </div>
+            </div>`;
+        });
+
+        // Mermaid Graph Syntax
+        let mermaidCode = 'graph LR\n';
+        p.steps?.forEach((s, i) => {
+          mermaidCode += `  S${s.step_order}["${s.step_order}. ${s.title}"]\n`;
+          if (i > 0) {
+            mermaidCode += `  S${p.steps[i-1].step_order} --> S${s.step_order}\n`;
+          }
+        });
+
+        const chartId = `mermaid-chart-${idx}`;
+
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs px-3 py-1 rounded-full font-bold bg-rose-950/80 text-rose-300 border border-rose-600/60 shadow-[0_0_10px_rgba(244,63,94,0.3)]">COMPOSITE: ${p.composite_severity}</span>
+            <span class="text-xs text-slate-400">Likelihood: <b class="text-amber-300">${p.likelihood}</b></span>
+          </div>
+          <h3 class="font-bold text-base text-rose-300">${p.title}</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">${p.narrative}</p>
+          <div class="bg-obsidian-950/90 p-3.5 rounded-xl border border-rose-500/20 text-xs">
+            <b class="text-rose-400">Business Impact:</b> ${p.business_impact}
+          </div>
+          <div class="space-y-2.5 pt-2 border-t border-white/5">${stepsHtml}</div>
+          <div class="mt-3.5 p-3.5 bg-obsidian-950 rounded-xl border border-white/10 overflow-x-auto text-center" id="${chartId}">
+            <pre class="mermaid text-xs">${mermaidCode}</pre>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      // Render mermaid graphs
+      try {
+        mermaid.run();
+      } catch(e) {}
+    }
+
+    async function loadReportsList() {
+      const container = document.getElementById('reports-list');
+      try {
+        const res = await fetch('/api/reports');
+        const list = await res.json();
+        if (!list || list.length === 0) {
+          container.innerHTML = '<div class="col-span-3 text-slate-500 italic py-3">No previous audit reports found in ./reports/</div>';
+          return;
+        }
+
+        container.innerHTML = '';
+        list.forEach(r => {
+          const div = document.createElement('div');
+          div.className = "p-3.5 bg-obsidian-950/70 rounded-xl border border-white/5 hover:border-amber-500/40 transition flex items-center justify-between shadow-sm group";
+          div.innerHTML = `
+            <div class="truncate mr-2">
+              <div class="font-bold text-amber-300 truncate group-hover:text-amber-200 transition">${r.report_id}</div>
+              <div class="text-[10px] text-slate-500 font-mono">${r.modified}</div>
+            </div>
+            <button onclick="window.open('/report/' + encodeURIComponent('${r.report_id}'), '_blank')" class="px-3 py-1.5 glass-btn-secondary text-xs rounded-xl flex items-center space-x-1.5 flex-shrink-0">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Open Report</span>
+            </button>
+          `;
+          container.appendChild(div);
+        });
+        lucide.createIcons();
+      } catch (err) {
+        container.innerHTML = `<div class="col-span-3 text-rose-400 text-xs">Failed to load reports: ${err}</div>`;
+      }
+    }
+
+    let currentReportFilename = "";
+    let currentReportRawText = "";
+
+    function switchReportTab(tab) {
+      const tab1 = document.getElementById('report-tab1-container');
+      const tab2 = document.getElementById('report-tab2-container');
+      const tab3 = document.getElementById('report-tab3-container');
+      const rawContainer = document.getElementById('raw-report-container');
+
+      const btn1 = document.getElementById('tab-btn-1');
+      const btn2 = document.getElementById('tab-btn-2');
+      const btn3 = document.getElementById('tab-btn-3');
+      const btnRaw = document.getElementById('tab-btn-raw');
+
+      const activeStyle = "px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-white font-bold transition flex items-center space-x-1.5 shadow-lg shadow-amber-500/20";
+      const inactiveStyle = "px-3.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-slate-400 hover:text-slate-200 transition flex items-center space-x-1.5 font-medium";
+
+      tab1.classList.add('hidden');
+      tab2.classList.add('hidden');
+      tab3.classList.add('hidden');
+      rawContainer.classList.add('hidden');
+
+      btn1.className = inactiveStyle;
+      btn2.className = inactiveStyle;
+      btn3.className = inactiveStyle;
+      btnRaw.className = inactiveStyle;
+
+      if (tab === 'tab1') {
+        tab1.classList.remove('hidden');
+        btn1.className = activeStyle;
+      } else if (tab === 'tab2') {
+        tab2.classList.remove('hidden');
+        btn2.className = activeStyle;
+      } else if (tab === 'tab3') {
+        tab3.classList.remove('hidden');
+        btn3.className = activeStyle;
+      } else if (tab === 'raw') {
+        rawContainer.classList.remove('hidden');
+        btnRaw.className = activeStyle;
+      }
+    }
+
+    function downloadActiveReport() {
+      if (!currentReportRawText) return;
+      const blob = new Blob([currentReportRawText], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = currentReportFilename || 'vyasa_security_report.md';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    async function viewReport(filename) {
+      try {
+        currentReportFilename = filename;
+        const res = await fetch(`/api/reports/${filename}`);
+        const content = await res.text();
+        currentReportRawText = content;
+
+        document.getElementById('modal-title').innerText = filename;
+        document.getElementById('modal-content').innerText = content;
+
+        let tab1Md = content;
+        let tab2Md = "";
+        let tab3Md = "";
+
+        if (content.includes('--- TAB_SEPARATOR_TAB1 ---')) {
+          const parts = content.split(/--- TAB_SEPARATOR_TAB\d ---/);
+          if (parts.length >= 4) {
+            tab1Md = parts[0] + "\n" + parts[1];
+            tab2Md = parts[2];
+            tab3Md = parts[3];
+          }
+        }
+
+        const t1 = document.getElementById('report-tab1-container');
+        const t2 = document.getElementById('report-tab2-container');
+        const t3 = document.getElementById('report-tab3-container');
+
+        if (window.marked) {
+          t1.innerHTML = marked.parse(tab1Md);
+          t2.innerHTML = tab2Md ? marked.parse(tab2Md) : '<div class="text-slate-400 p-4 font-mono">No telemetry data logged for Tab 2.</div>';
+          t3.innerHTML = tab3Md ? marked.parse(tab3Md) : '<div class="text-slate-400 p-4 font-mono">No tech stack / endpoints inventory logged for Tab 3.</div>';
+        } else {
+          t1.innerHTML = `<pre class="whitespace-pre-wrap">${tab1Md}</pre>`;
+          t2.innerHTML = `<pre class="whitespace-pre-wrap">${tab2Md}</pre>`;
+          t3.innerHTML = `<pre class="whitespace-pre-wrap">${tab3Md}</pre>`;
+        }
+
+        switchReportTab('tab1');
+        document.getElementById('report-modal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch(e) {
+        alert('Could not open report: ' + e);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('report-modal').classList.add('hidden');
+    }
+
+    function setEndpoint(path) {
+      document.getElementById('endpoint-input').value = path;
+    }
+
+    // Vulnerability Checklist Management (Pentest-Book & OWASP WSTG Standard)
+    let catalogData = [];
+    let selectedCheckIds = new Set();
+
+    function getDefaultCatalogFallback() {
+      return [
+        { check_id: "INJ-01", title: "SQL Injection Probing & Signature Analysis", category: "Injection Flaws (SQLi/XSS/RCE/LFI)", severity: "CRITICAL", cwe_id: "CWE-89", description: "Probes inputs for error-based, time-based, and boolean SQL injection signatures." },
+        { check_id: "INJ-02", title: "Reflected & Stored Cross-Site Scripting (XSS)", category: "Injection Flaws (SQLi/XSS/RCE/LFI)", severity: "HIGH", cwe_id: "CWE-79", description: "Tests for unescaped HTML/JS payload reflection in page parameters." },
+        { check_id: "INJ-03", title: "Command Injection & OS Shell Execution", category: "Injection Flaws (SQLi/XSS/RCE/LFI)", severity: "CRITICAL", cwe_id: "CWE-78", description: "Evaluates shell command expansion in system invocation parameters." },
+        { check_id: "INJ-04", title: "Local File Inclusion (LFI) & Path Traversal", category: "Injection Flaws (SQLi/XSS/RCE/LFI)", severity: "HIGH", cwe_id: "CWE-22", description: "Attempts directory traversal payloads to access sensitive files." },
+        { check_id: "INJ-05", title: "Server-Side Request Forgery (SSRF)", category: "Injection Flaws (SQLi/XSS/RCE/LFI)", severity: "HIGH", cwe_id: "CWE-918", description: "Tests for internal network request redirection via server parameters." },
+        { check_id: "AUTH-01", title: "Weak Authentication & Password Policy Audit", category: "Authentication & Session Management", severity: "HIGH", cwe_id: "CWE-287", description: "Checks for brute-force vulnerability, missing rate limits, and default credentials." },
+        { check_id: "AUTH-02", title: "Session Fixation & Insecure Cookie Flags", category: "Authentication & Session Management", severity: "MEDIUM", cwe_id: "CWE-384", description: "Verifies HttpOnly, Secure, and SameSite flags on session tokens." },
+        { check_id: "AUTHZ-01", title: "Broken Object Level Authorization (BOLA / IDOR)", category: "Authorization & Access Control", severity: "HIGH", cwe_id: "CWE-639", description: "Tests parameter tampering across object references to access unauthorized data." },
+        { check_id: "AUTHZ-02", title: "Privilege Escalation & Privilege Bypass", category: "Authorization & Access Control", severity: "CRITICAL", cwe_id: "CWE-269", description: "Attempts vertical and horizontal privilege escalation via API headers." },
+        { check_id: "API-01", title: "REST / GraphQL API Endpoint Exposure", category: "API & GraphQL Security", severity: "MEDIUM", cwe_id: "CWE-200", description: "Audits unauthenticated API endpoints, Swagger/OpenAPI docs, and GraphQL introspection." },
+        { check_id: "CONF-01", title: "Security Headers & CORS Misconfiguration", category: "Security Misconfigurations", severity: "LOW", cwe_id: "CWE-693", description: "Checks CSP, HSTS, X-Frame-Options, and overly permissive CORS Access-Control-Allow-Origin headers." },
+        { check_id: "CONF-02", title: "Sensitive File & Backup Leakage (.env, .git)", category: "Security Misconfigurations", severity: "HIGH", cwe_id: "CWE-538", description: "Scans for publicly exposed configuration files, .git repositories, and environment files." },
+        { check_id: "INFO-01", title: "Server Banner & Stack Trace Information Leak", category: "Information Disclosure", severity: "LOW", cwe_id: "CWE-200", description: "Inspects HTTP Server headers, powered-by tags, and raw exception tracebacks." }
+      ];
+    }
+
+    async function loadCatalog() {
+      try {
+        const res = await fetch('/api/catalog');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        catalogData = await res.json();
+        if (!catalogData || catalogData.length === 0) {
+          catalogData = getDefaultCatalogFallback();
+        }
+        if (selectedCheckIds.size === 0) {
+          selectedCheckIds = new Set(catalogData.map(c => c.check_id));
+        }
+        renderVulnChecklist();
+        updateSelectedVulnsBadge();
+      } catch (e) {
+        console.error("Failed to load catalog from server, using fallback:", e);
+        if (!catalogData || catalogData.length === 0) {
+          catalogData = getDefaultCatalogFallback();
+          selectedCheckIds = new Set(catalogData.map(c => c.check_id));
+          renderVulnChecklist();
+          updateSelectedVulnsBadge();
+        }
+      }
+    }
+
+    function openVulnModal() {
+      const modal = document.getElementById('vuln-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+      }
+      if (!catalogData || catalogData.length === 0) {
+        loadCatalog();
+      } else {
+        renderVulnChecklist();
+      }
+      try { lucide.createIcons(); } catch (err) {}
+    }
+
+    function closeVulnModal() {
+      document.getElementById('vuln-modal').classList.add('hidden');
+      updateSelectedVulnsBadge();
+    }
+
+    function updateSelectedVulnsBadge() {
+      const count = selectedCheckIds.size;
+      const total = catalogData.length || 100;
+      const badge = document.getElementById('selected-vulns-badge');
+      const modalStatus = document.getElementById('vuln-modal-status');
+      
+      if (!badge) return;
+
+      if (count === total) {
+        badge.innerText = `${count} / ${total} Checks (All)`;
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30";
+      } else if (count === 0) {
+        badge.innerText = `0 Checks (None Selected)`;
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs bg-rose-500/20 text-rose-300 font-mono font-bold border border-rose-500/30";
+      } else {
+        badge.innerText = `${count} / ${total} Selected`;
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs bg-amber-500/20 text-amber-300 font-mono font-bold border border-amber-500/30";
+      }
+
+      if (modalStatus) {
+        const pct = Math.round((count / Math.max(total, 1)) * 100);
+        modalStatus.innerText = `${count} of ${total} checks selected (${pct}% pentest coverage)`;
+      }
+    }
+
+    function selectVulnPreset(preset) {
+      if (!catalogData || catalogData.length === 0) return;
+
+      if (preset === 'all') {
+        selectedCheckIds = new Set(catalogData.map(c => c.check_id));
+      } else if (preset === 'owasp') {
+        const top10Ids = ['INJ-01', 'INJ-06', 'INJ-05', 'AUTH-01', 'AUTH-02', 'AUTHZ-01', 'AUTHZ-05', 'CONF-01', 'CONF-03', 'API-01'];
+        selectedCheckIds = new Set(catalogData.filter(c => top10Ids.includes(c.check_id)).map(c => c.check_id));
+      } else if (preset === 'sqli') {
+        selectedCheckIds = new Set(catalogData.filter(c => c.check_id.startsWith('INJ-') || c.category.toLowerCase().includes('injection')).map(c => c.check_id));
+      } else if (preset === 'auth') {
+        selectedCheckIds = new Set(catalogData.filter(c => c.check_id.startsWith('AUTH-') || c.category.toLowerCase().includes('authentication')).map(c => c.check_id));
+      } else if (preset === 'bola') {
+        selectedCheckIds = new Set(catalogData.filter(c => c.check_id.startsWith('AUTHZ-') || c.category.toLowerCase().includes('access')).map(c => c.check_id));
+      } else if (preset === 'logic') {
+        selectedCheckIds = new Set(catalogData.filter(c => c.check_id.startsWith('LOGIC-') || c.category.toLowerCase().includes('logic')).map(c => c.check_id));
+      } else if (preset === 'api') {
+        selectedCheckIds = new Set(catalogData.filter(c => c.check_id.startsWith('API-') || c.category.toLowerCase().includes('api')).map(c => c.check_id));
+      } else if (preset === 'config') {
+        selectedCheckIds = new Set(catalogData.filter(c => c.check_id.startsWith('CONF-') || c.category.toLowerCase().includes('misconfiguration')).map(c => c.check_id));
+      } else if (preset === 'info') {
+        selectedCheckIds = new Set(catalogData.filter(c => c.check_id.startsWith('INFO-') || c.category.toLowerCase().includes('information')).map(c => c.check_id));
+      } else if (preset === 'clear') {
+        selectedCheckIds = new Set();
+      }
+
+      renderVulnChecklist();
+      updateSelectedVulnsBadge();
+    }
+
+    function toggleCategory(catName, isChecked) {
+      catalogData.filter(c => c.category === catName).forEach(c => {
+        if (isChecked) {
+          selectedCheckIds.add(c.check_id);
+        } else {
+          selectedCheckIds.delete(c.check_id);
+        }
+      });
+      syncCheckboxesFromSet();
+      updateSelectedVulnsBadge();
+    }
+
+    function toggleSingleCheck(checkId, isChecked) {
+      if (isChecked) {
+        selectedCheckIds.add(checkId);
+      } else {
+        selectedCheckIds.delete(checkId);
+      }
+      syncCategoryHeaderCheckboxes();
+      updateSelectedVulnsBadge();
+    }
+
+    function toggleCheckItemFromDiv(checkId, event) {
+      if (event.target.tagName === 'INPUT') return;
+      const isChecked = !selectedCheckIds.has(checkId);
+      const cb = document.getElementById(`check-item-${checkId}`);
+      if (cb) cb.checked = isChecked;
+      toggleSingleCheck(checkId, isChecked);
+    }
+
+    function syncCheckboxesFromSet() {
+      document.querySelectorAll('.vuln-check-item').forEach(cb => {
+        cb.checked = selectedCheckIds.has(cb.value);
+      });
+      syncCategoryHeaderCheckboxes();
+    }
+
+    function toggleAccordion(catBodyId) {
+      const body = document.getElementById(catBodyId);
+      const icon = document.getElementById(`icon-${catBodyId}`);
+      if (body) {
+        body.classList.toggle('hidden');
+        if (icon) {
+          icon.style.transform = body.classList.contains('hidden') ? 'rotate(-90deg)' : 'rotate(0deg)';
+        }
+      }
+    }
+
+    function syncCategoryHeaderCheckboxes() {
+      const groups = {};
+      catalogData.forEach(c => {
+        if (!groups[c.category]) groups[c.category] = [];
+        groups[c.category].push(c.check_id);
+      });
+      for (const [cat, ids] of Object.entries(groups)) {
+        const catSlug = cat.replace(/[^a-zA-Z0-9]/g, '_');
+        const masterCb = document.getElementById(`cat-master-${catSlug}`);
+        if (masterCb) {
+          masterCb.checked = ids.length > 0 && ids.every(id => selectedCheckIds.has(id));
+        }
+      }
+    }
+
+    function renderVulnChecklist() {
+      const container = document.getElementById('vuln-checklist-container');
+      if (!container || !catalogData) return;
+
+      const grouped = {};
+      catalogData.forEach(c => {
+        if (!grouped[c.category]) grouped[c.category] = [];
+        grouped[c.category].push(c);
+      });
+
+      container.innerHTML = '';
+      for (const [category, checks] of Object.entries(grouped)) {
+        const catSlug = category.replace(/[^a-zA-Z0-9]/g, '_');
+        const catDiv = document.createElement('div');
+        catDiv.className = "vuln-category-group border border-white/10 rounded-xl overflow-hidden bg-obsidian-950/70 shadow-sm";
+
+        const allChecked = checks.every(c => selectedCheckIds.has(c.check_id));
+        const checkedCount = checks.filter(c => selectedCheckIds.has(c.check_id)).length;
+        
+        catDiv.innerHTML = `
+          <div class="p-3 bg-obsidian-900/90 border-b border-white/5 flex items-center justify-between cursor-pointer select-none" onclick="toggleAccordion('cat-body-${catSlug}')">
+            <div class="flex items-center space-x-3" onclick="event.stopPropagation()">
+              <input type="checkbox" id="cat-master-${catSlug}" ${allChecked ? 'checked' : ''} onchange="toggleCategory('${category}', this.checked)" class="w-4 h-4 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+              <span class="font-bold text-xs text-slate-200">${category}</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-obsidian-950 text-amber-300 font-mono font-bold border border-amber-500/30">${checkedCount} / ${checks.length} selected</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform" id="icon-cat-body-${catSlug}"></i>
+          </div>
+          <div id="cat-body-${catSlug}" class="p-2 space-y-1.5 max-h-64 overflow-y-auto">
+            ${checks.map(c => {
+              let sevColor = "bg-obsidian-950 text-slate-300 border border-white/10";
+              if (c.severity === 'CRITICAL') sevColor = "bg-rose-950/80 text-rose-300 border border-rose-600/60 shadow-[0_0_8px_rgba(244,63,94,0.3)]";
+              else if (c.severity === 'HIGH') sevColor = "bg-amber-950/80 text-amber-300 border border-amber-600/60 shadow-[0_0_8px_rgba(217,119,6,0.3)]";
+              else if (c.severity === 'MEDIUM') sevColor = "bg-yellow-950/80 text-yellow-300 border border-yellow-600/60";
+              else if (c.severity === 'LOW') sevColor = "bg-sky-950/80 text-sky-300 border border-sky-600/60";
+
+              const wstgCode = c.check_id.startsWith('INJ-') ? 'WSTG-INPV' : (c.check_id.startsWith('AUTH-') ? 'WSTG-ATHN' : (c.check_id.startsWith('AUTHZ-') ? 'WSTG-ATHZ' : (c.check_id.startsWith('API-') ? 'WSTG-APIT' : 'WSTG-CONF')));
+
+              return `
+                <div class="vuln-item-label flex items-start space-x-2.5 p-2 rounded-lg bg-obsidian-950/40 hover:bg-obsidian-900 border border-white/5 hover:border-amber-500/40 cursor-pointer transition" data-search="${c.check_id} ${c.title} ${c.cwe_id} ${category} ${wstgCode}" onclick="toggleCheckItemFromDiv('${c.check_id}', event)">
+                  <input type="checkbox" id="check-item-${c.check_id}" value="${c.check_id}" ${selectedCheckIds.has(c.check_id) ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleSingleCheck('${c.check_id}', this.checked)" class="vuln-check-item mt-0.5 w-3.5 h-3.5 accent-amber-500 rounded bg-obsidian-950 border-slate-700 cursor-pointer">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-2">
+                      <span class="font-mono font-bold text-amber-300 text-[11px]">${c.check_id}</span>
+                      <span class="text-[9px] px-1.5 py-0.2 rounded font-semibold ${sevColor}">${c.severity}</span>
+                      <span class="text-[10px] font-mono text-slate-400">${c.cwe_id}</span>
+                      <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-obsidian-950 border border-white/5 text-slate-400">${wstgCode}</span>
+                    </div>
+                    <div class="text-xs text-slate-100 font-medium truncate pt-0.5">${c.title}</div>
+                    <div class="text-[10px] text-slate-400 truncate">${c.description}</div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+        container.appendChild(catDiv);
+      }
+      lucide.createIcons();
+    }
+
+    function filterVulnChecks() {
+      const query = (document.getElementById('vuln-search-input')?.value || '').toLowerCase().trim();
+      document.querySelectorAll('.vuln-item-label').forEach(el => {
+        const dataSearch = (el.getAttribute('data-search') || '').toLowerCase();
+        if (!query || dataSearch.includes(query)) {
+          el.style.display = 'flex';
+          const parentGroup = el.closest('.vuln-category-group');
+          if (parentGroup && query) {
+            const body = parentGroup.querySelector('[id^="cat-body-"]');
+            if (body && body.classList.contains('hidden')) {
+              body.classList.remove('hidden');
+            }
+          }
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    function getSelectedCheckIds() {
+      return Array.from(selectedCheckIds);
+    }
+
+    // Initial load & Spatial UI Ignition
+    loadReportsList();
+    loadCatalog();
+    updateDonut({ check_feed: [] });
+    initSpatialEngine();
+  </script>
+</body>
+</html>

@@ -20,3 +20,19 @@ npm-debug.log*
 .env.*
 secrets.*
 *token*.txt
+
+# Python (T3 platform)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+
+# VYASA runtime output (not source)
+reports/
+Claude outputs/
+_t3_transfer.tgz

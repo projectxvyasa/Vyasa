@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vyasa"
+version = "0.1.0"
+description = "Autonomous AI Penetration Testing & Risk Analysis Platform"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "VYASA Security Core" }
+]
+dependencies = [
+    "pydantic>=2.6.0",
+    "openai>=1.14.0",
+    "pyyaml>=6.0.1",
+    "rich>=13.7.0",
+    "networkx>=3.2.0",
+    "jinja2>=3.1.3",
+    "python-dotenv>=1.0.1",
+    "requests>=2.31.0",
+    "urllib3>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0"
+]
+
+[project.scripts]
+vyasa = "vyasa.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vyasa*"]
+
