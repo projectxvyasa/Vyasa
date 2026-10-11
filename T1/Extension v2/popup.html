@@ -2,15 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VYASA: Vulnerability Yield & Attack Simulation Automation HUD</title>
   <script>try{var t=localStorage.getItem('vyasa_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body style="width: 420px; min-height: 540px;">
+<body style="width: 440px; min-height: 580px;">
+  <!-- Spatial Ambient Canvas (iOS / VisionOS Floating Lighting) -->
+  <div class="spatial-bg">
+    <div class="spatial-orb orb-1"></div>
+    <div class="spatial-orb orb-2"></div>
+    <div class="spatial-orb orb-3"></div>
+  </div>
   <div class="crt-overlay"></div>
 
   <div class="container">
-    <!-- Cyber Header -->
+    <!-- Spatial Header (Dynamic Island / Frosted Glass Capsule) -->
     <header class="cyber-header">
       <div class="header-top">
         <h1 class="cyber-title">
@@ -21,28 +28,32 @@
       <div class="target-url" id="targetUrlDisplay">TARGET: <span>Acquiring active tab...</span></div>
     </header>
 
-    <!-- Action Bar -->
+    <!-- Spatial Action Bar -->
     <div class="action-bar">
-      <button class="btn-cyber" id="scanBtn">
-        ▶ INITIATE SCAN
-      </button>
-      <label class="active-toggle" id="activeToggleWrap" title="Active mode confirms vulns down to the parameter by sending test traffic — authorized targets only.">
-        <input type="checkbox" id="activeToggle">
-        <span class="active-toggle-track"><span class="active-toggle-dot"></span></span>
-        <span class="active-toggle-label">⚡ ACTIVE</span>
-      </label>
-      <button class="btn-cyber btn-secondary" id="exportJsonBtn" title="Download JSON Report">
-        ⤓ JSON
-      </button>
-      <button class="btn-cyber btn-secondary" id="exportPdfBtn" title="Download Printable PDF Report">
-        📄 PDF
-      </button>
-      <button class="btn-cyber btn-secondary" id="exportMdBtn" title="Copy Markdown Bug Bounty Report">
-        📋 MD
-      </button>
+      <div class="action-primary-row">
+        <button class="btn-cyber" id="scanBtn">
+          ▶ INITIATE SCAN
+        </button>
+        <label class="active-toggle" id="activeToggleWrap" title="Active mode confirms vulns down to the parameter by sending test traffic — authorized targets only.">
+          <input type="checkbox" id="activeToggle">
+          <span class="active-toggle-track"><span class="active-toggle-dot"></span></span>
+          <span class="active-toggle-label">⚡ ACTIVE</span>
+        </label>
+      </div>
+      <div class="action-export-row">
+        <button class="btn-cyber btn-secondary" id="exportJsonBtn" title="Download JSON Report">
+          ⤓ JSON
+        </button>
+        <button class="btn-cyber btn-secondary" id="exportPdfBtn" title="Download Printable PDF Report">
+          📄 PDF
+        </button>
+        <button class="btn-cyber btn-secondary" id="exportMdBtn" title="Copy Markdown Bug Bounty Report">
+          📋 MD
+        </button>
+      </div>
     </div>
 
-    <!-- Score HUD Card -->
+    <!-- Spatial Score Activity Card -->
     <div class="hud-score-card">
       <div class="gauge-circle" id="scoreCircle">
         <span class="score-num" id="scoreNum">--</span>
@@ -54,7 +65,7 @@
       </div>
     </div>
 
-    <!-- Cyber Navigation Tabs -->
+    <!-- iOS Segmented Control Tabs -->
     <div class="cyber-tabs" id="tabNav">
       <button class="tab-btn active" data-tab="panelOverview">OVERVIEW</button>
       <button class="tab-btn" data-tab="panelActive">ATTACK SURFACE</button>
@@ -66,7 +77,7 @@
       <button class="tab-btn" data-tab="panelDns">DNS & NET</button>
     </div>
 
-    <!-- Tab Panels Container -->
+    <!-- Spatial Tab Panels Container -->
     <div id="tabContent">
       <!-- 1. OVERVIEW PANEL -->
       <div class="tab-panel active" id="panelOverview">
@@ -122,14 +133,14 @@
       </div>
     </div>
 
-    <!-- Terminal Console Log Window -->
+    <!-- Spatial Terminal Diagnostic Window -->
     <div class="terminal-card" id="terminalConsole">
-      <div class="log-line"><span class="log-time">[SYS]</span> <span class="log-info">VYASA Cyber Terminal Engine v2.6 Initialized.</span></div>
+      <div class="log-line"><span class="log-time">[SYS]</span> <span class="log-info">VYASA Spatial Security Engine v2.7 Initialized.</span></div>
       <div class="log-line"><span class="log-time">[SYS]</span> Select active tab and press INITIATE SCAN.</div>
     </div>
   </div>
 
-  <!-- Authorization Gate Modal (active scanning) -->
+  <!-- Spatial Authorization Gate Modal -->
   <div class="vyasa-modal-overlay" id="authModal" style="display:none;">
     <div class="vyasa-modal">
       <div class="vyasa-modal-title">⚠ AUTHORIZED TESTING CONFIRMATION</div>

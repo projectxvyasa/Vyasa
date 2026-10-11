@@ -22,8 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (themeToggle) themeToggle.textContent = theme === 'light' ? '☀️' : '🌙';
   }
   (function initTheme() {
-    let saved = 'dark';
-    try { saved = localStorage.getItem('vyasa_theme') || 'dark'; } catch (e) {}
+    let saved = null;
+    try { saved = localStorage.getItem('vyasa_theme'); } catch (e) {}
+    if (!saved) {
+      saved = document.documentElement.getAttribute('data-theme') || 'dark';
+    }
     applyTheme(saved);
   })();
   if (themeToggle) {
@@ -36,19 +39,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 1. Initialize Active Tab Info
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs && tabs[0]) {
-      activeTab = tabs[0];
-      if (activeTab.url) {
-        targetUrlDisplay.innerHTML = `TARGET: <span>${activeTab.url}</span>`;
-        logTerminal(`Target acquired: ${activeTab.url}`, 'info');
-      } else {
-        targetUrlDisplay.innerHTML = `TARGET: <span style="color:var(--alert-red);">Unrestricted / Restricted Page</span>`;
-        scanBtn.disabled = true;
-        logTerminal('Restricted chrome:// or local origin. Navigation required.', 'warn');
+  if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs[0]) {
+        activeTab = tabs[0];
+        if (activeTab.url) {
+          targetUrlDisplay.innerHTML = `TARGET: <span>${activeTab.url}</span>`;
+          logTerminal(`Target acquired: ${activeTab.url}`, 'info');
+        } else {
+          targetUrlDisplay.innerHTML = `TARGET: <span style="color:var(--alert-red);">Unrestricted / Restricted Page</span>`;
+          scanBtn.disabled = true;
+          logTerminal('Restricted chrome:// or local origin. Navigation required.', 'warn');
+        }
       }
-    }
-  });
+    });
+  } else {
+    activeTab = { url: 'https://example.com/demo-target', id: 1 };
+    targetUrlDisplay.innerHTML = `TARGET: <span>https://example.com/demo-target</span>`;
+    logTerminal('Spatial Preview Mode: https://example.com/demo-target acquired.', 'info');
+  }
 
   // 2. Tab Navigation Switcher
   const tabButtons = document.querySelectorAll('.tab-btn');
